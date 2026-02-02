@@ -2,69 +2,56 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Manager Précision v13 - Hockey, MTG & Decklist</title>
+    <title>Manager Pro v15 - Decklist Officielle & Juges</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --gold: #d4af37; --dark: #121212; --green: #2ecc71; --blue: #3498db; --red: #e74c3c; }
-        body { font-family: 'Inter', sans-serif; margin: 0; background: #f0f2f5; color: #333; }
-        
+        :root { --gold: #d4af37; --dark: #121212; --green: #2ecc71; --red: #e74c3c; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background: #f0f2f5; }
         #ui-gate { background: var(--dark); color: white; padding: 20px; border-bottom: 4px solid var(--gold); position: sticky; top: 0; z-index: 1000; }
-        .nav-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; max-width: 1400px; margin: 0 auto; }
-        
-        label { font-size: 0.7rem; font-weight: bold; color: var(--gold); text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; max-width: 1400px; margin: 0 auto; }
+        label { font-size: 0.65rem; font-weight: bold; color: var(--gold); text-transform: uppercase; display: block; margin-bottom: 4px; }
         input, select { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; }
-
-        button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .nav-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
+        button { padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-mode { background: #333; color: #888; }
         .btn-mode.active { background: var(--gold); color: black; }
-        .btn-pdf { background: var(--green); color: white; width: 100%; margin-top: 15px; box-shadow: 0 4px 0 #27ae60; }
-
-        /* TABLEAU ÉDITEUR */
-        .container { max-width: 1400px; margin: 20px auto; padding: 0 20px; }
-        .editor-box { background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #f8f9fa; padding: 15px; text-align: left; font-size: 0.75rem; border-bottom: 2px solid #eee; }
-        td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
-        .qty-input { width: 70px; text-align: center; border: 1px solid #ddd; padding: 6px; border-radius: 4px; font-weight: bold; }
-
-        /* CATALOGUE VISUEL (10/PAGE) */
+        .btn-pdf { background: var(--green); color: white; width: 100%; margin-top: 15px; }
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: var(--gold); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; }
+        /* Rendu Catalogue */
         .page { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 10mm; box-sizing: border-box; page-break-after: always; }
         .grid-10 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 6mm; height: 100%; }
-        .card-item { border: 1px solid #ddd; padding: 10px; border-radius: 8px; display: flex; align-items: center; height: 50mm; box-sizing: border-box; }
-        .img-box { width: 85px; height: 100%; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
+        .card-item { border: 1px solid #ddd; padding: 10px; border-radius: 10px; display: flex; align-items: center; height: 50mm; background: #fff; box-sizing: border-box; }
+        .img-container { width: 90px; height: 100%; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
         .card-item img { max-height: 100%; max-width: 100%; object-fit: contain; }
-        .card-name { font-size: 0.95rem; font-weight: 800; margin: 4px 0; }
+        .card-name { font-size: 0.95rem; font-weight: 800; color: #111; margin: 3px 0; }
         .card-price { font-size: 1.6rem; font-weight: 900; color: var(--green); }
-        .cover-page { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--dark); color: white; border: 12px double var(--gold); }
-
-        @media print { #ui-gate, .container { display: none !important; } .page { margin: 0; width: 100%; } }
+        @media print { #ui-gate, .loading-overlay { display: none !important; } .page { margin: 0; box-shadow: none; } }
     </style>
 </head>
 <body>
+
+<div id="loading" class="loading-overlay">
+    <h2 id="load-msg">SYNCHRONISATION DES IMAGES...</h2>
+    <p id="load-count">0 / 0</p>
+</div>
 
 <div id="ui-gate">
     <div class="nav-btns">
         <button id="btn-cat" class="btn-mode active" onclick="switchMode('cat')">💰 Catalogue Revendeur</button>
         <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">🎴 Decklist Joueur</button>
+        <button style="background:var(--red); color:white;" onclick="location.reload()">🔄 Reset Complet</button>
     </div>
 
     <div class="controls-grid">
-        <div><label>1. Jeu</label><select id="dataSource"><option value="hockey">Hockey (PriceCharting)</option><option value="mtg">Magic (Scryfall)</option></select></div>
+        <div><label>1. Source</label><select id="dataSource"><option value="hockey">Hockey (PriceCharting)</option><option value="mtg">Magic (Scryfall)</option></select></div>
         <div><label>2. CSV</label><input type="file" id="csvIn" accept=".csv" onchange="processData()"></div>
         <div><label>Format</label><select id="gameFormat" onchange="render()"><option value="standard">Standard (60/15)</option><option value="commander">Commander (100)</option></select></div>
-        <div><label>Nom / Titre</label><input type="text" id="lastName" placeholder="Ex: Connor Bedard / Jace" oninput="render()"></div>
-        <div><label>Event / Lieu</label><input type="text" id="event" placeholder="Montreal Expo" oninput="render()"></div>
+        <div><label>Nom Joueur</label><input type="text" id="lastName" placeholder="Nom complet" oninput="render()"></div>
+        <div><label>Événement</label><input type="text" id="event" placeholder="Qualifier Montreal" oninput="render()"></div>
     </div>
     
-    <button class="btn-pdf" onclick="handleFinalExport()">📄 GÉNÉRER LE DOCUMENT PDF</button>
-</div>
-
-<div class="container">
-    <div class="editor-box">
-        <table><thead id="table-head"></thead><tbody id="table-body"></tbody></table>
-    </div>
+    <button class="btn-pdf" onclick="handleFinalExport()">📄 GÉNÉRER LE PDF (AVEC SECTION JUGES)</button>
 </div>
 
 <div id="catalog-render"></div>
@@ -84,64 +71,67 @@
         const file = document.getElementById('csvIn').files[0];
         const source = document.getElementById('dataSource').value;
         if(!file) return;
+        
+        document.getElementById('loading').style.display = 'flex';
+        cardData = [];
 
         Papa.parse(file, {
             header: true, skipEmptyLines: true,
             complete: async (res) => {
-                let temp = res.data.map(row => {
-                    let p = (parseFloat(row["price-in-pennies"])/100) || parseFloat(row["Price (USD)"]) || 0;
-                    let q = parseInt(row["quantity"]) || 1;
-                    return {
-                        name: row["product-name"] || row["Card Name"] || "",
-                        id: row["id"] || "",
-                        set: row["console-name"] || row["Set"] || "Série",
-                        price: p, sellPrice: p, qty: q, main: q, side: 0, isCmd: false, image: ""
-                    };
-                }).filter(c => c.name !== "");
+                let raw = res.data.filter(row => row["product-name"] || row["Card Name"]);
+                for (let [i, row] of raw.entries()) {
+                    document.getElementById('load-count').innerText = `${i + 1} / ${raw.length}`;
+                    let name = row["product-name"] || row["Card Name"];
+                    let img = "";
 
-                for (let c of temp) {
                     if (source === 'hockey') {
-                        c.image = c.id ? `https://www.pricecharting.com/game-photos?id=${c.id}` : "";
+                        img = row["id"] ? `https://www.pricecharting.com/game-photos?id=${row["id"]}` : "";
                     } else {
                         try {
-                            const r = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.name)}`);
+                            const r = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
                             const d = await r.json();
-                            c.image = d.image_uris ? d.image_uris.normal : "";
-                        } catch(e) { c.image = ""; }
+                            img = d.image_uris ? d.image_uris.normal : "";
+                            if (i % 5 === 0) await new Promise(r => setTimeout(r, 100));
+                        } catch(e) { img = ""; }
                     }
+
+                    cardData.push({
+                        name: name,
+                        set: row["console-name"] || row["Set"] || "Série",
+                        price: (parseFloat(row["price-in-pennies"])/100) || parseFloat(row["Price (USD)"]) || 0,
+                        qty: parseInt(row["quantity"]) || 1,
+                        main: parseInt(row["quantity"]) || 1, side: 0, isCmd: false,
+                        image: img
+                    });
                 }
-                cardData = temp;
+                document.getElementById('loading').style.display = 'none';
                 render();
             }
         });
     }
 
     function render() {
-        const head = document.getElementById('table-head');
-        const body = document.getElementById('table-body');
         const out = document.getElementById('catalog-render');
-        const fmt = document.getElementById('gameFormat').value;
-
         out.innerHTML = '';
+        if(cardData.length === 0) return;
 
         if(currentMode === 'cat') {
-            head.innerHTML = `<tr><th>Item</th><th>Série</th><th>Prix Vente</th></tr>`;
-            body.innerHTML = cardData.map((c, i) => `<tr><td><b>${c.name}</b></td><td>${c.set}</td><td><input type="number" step="0.01" class="qty-input" value="${c.sellPrice.toFixed(2)}" oninput="cardData[${i}].sellPrice=parseFloat(this.value)||0"></td></tr>`).join('');
-            
-            if(cardData.length > 0) {
-                out.innerHTML += `<div class="page"><div class="cover-page"><h1>${document.getElementById('lastName').value || "CATALOGUE"}</h1><img style="height:400px; border:5px solid var(--gold); background:white;" src="${cardData[0].image}"><h2>VALEUR: ${cardData.reduce((s,c)=>s+(c.sellPrice*c.qty),0).toFixed(2)}$</h2></div></div>`;
-                for (let i = 0; i < cardData.length; i += 10) {
-                    let p = document.createElement('div'); p.className = 'page';
-                    let grid = document.createElement('div'); grid.className = 'grid-10';
-                    cardData.slice(i, i+10).forEach(c => {
-                        grid.innerHTML += `<div class="card-item"><div class="img-box"><img src="${c.image}"></div><div class="card-info"><small>${c.set}</small><div class="card-name">${c.name}</div><div class="card-price">${c.sellPrice.toFixed(2)}$</div></div></div>`;
-                    });
-                    p.appendChild(grid); out.appendChild(p);
-                }
+            // Catalogue... (Logique identique à la v14 pour l'affichage)
+            out.innerHTML += `<div class="page"><div style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:var(--dark); color:white; border:12px double var(--gold);"><h1>${document.getElementById('lastName').value || "CATALOGUE"}</h1><img style="height:400px; border:5px solid var(--gold); background:white; margin:30px;" src="${cardData[0].image}"><h2>VALEUR: ${cardData.reduce((s,c)=>s+(c.price*c.qty),0).toFixed(2)}$</h2></div></div>`;
+            for (let i = 0; i < cardData.length; i += 10) {
+                let p = document.createElement('div'); p.className = 'page';
+                let grid = document.createElement('div'); grid.className = 'grid-10';
+                cardData.slice(i, i+10).forEach(c => {
+                    grid.innerHTML += `<div class="card-item"><div class="img-container"><img src="${c.image}"></div><div class="card-info"><small>${c.set}</small><div class="card-name">${c.name}</div><div class="card-price">${c.price.toFixed(2)}$</div></div></div>`;
+                });
+                p.appendChild(grid); out.appendChild(p);
             }
         } else {
-            head.innerHTML = `<tr><th>Carte</th><th>Quantité Main</th><th>${fmt==='standard'?'Sideboard':'CMD?'}</th></tr>`;
-            body.innerHTML = cardData.map((c, i) => `<tr><td>${c.name}</td><td><input type="number" class="qty-input" value="${c.main}" oninput="cardData[${i}].main=parseInt(this.value)||0"></td><td>${fmt==='standard'?`<input type="number" class="qty-input" value="${c.side}" oninput="cardData[${i}].side=parseInt(this.value)||0">`:`<input type="checkbox" onchange="cardData[${i}].isCmd=this.checked">`}</td></tr>`).join('');
+            // Vue Decklist pour édition
+            let table = `<div class="page"><h3>Configuration Decklist</h3><table style="width:100%; border-collapse:collapse;"><tr><th>Carte</th><th>Main</th><th>Side/CMD</th></tr>`;
+            table += cardData.map((c, i) => `<tr><td>${c.name}</td><td><input type="number" style="width:50px" value="${c.main}" oninput="cardData[${i}].main=parseInt(this.value)||0"></td><td><input type="number" style="width:50px" value="${c.side}" oninput="cardData[${i}].side=parseInt(this.value)||0"></td></tr>`).join('');
+            table += `</table></div>`;
+            out.innerHTML = table;
         }
     }
 
@@ -150,24 +140,47 @@
         const { jsPDF } = window.jspdf; const doc = new jsPDF();
         const fmt = document.getElementById('gameFormat').value;
         const last = (document.getElementById('lastName').value || "NOM").toUpperCase();
+        const event = (document.getElementById('event').value || "ÉVÉNEMENT").toUpperCase();
 
-        doc.setFontSize(18); doc.text("DECK LIST OFFICIELLE", 105, 15, {align:"center"});
-        doc.rect(15, 20, 180, 20); doc.setFontSize(9);
-        doc.text(`JOUEUR: ${last} | EVENT: ${document.getElementById('event').value}`, 20, 32);
+        // Header Officiel
+        doc.setFontSize(20); doc.text("DECK REGISTRATION SHEET", 105, 15, {align:"center"});
+        doc.setFontSize(9);
+        doc.rect(15, 20, 180, 25);
+        doc.text(`DATE: ${new Date().toLocaleDateString()}`, 20, 27);
+        doc.text(`EVENT: ${event}`, 20, 34);
+        doc.text(`PLAYER NAME: ${last}`, 20, 41);
+        
+        // Section Deck
+        let y = 60;
+        doc.setFontSize(11); doc.text("MAIN DECK", 15, 55);
+        doc.setFontSize(9);
+        cardData.filter(c => c.main > 0).forEach(c => {
+            doc.text(`${c.main}`, 15, y); doc.text(`${c.name}`, 25, y);
+            doc.line(15, y+1, 100, y+1);
+            y += 7; if(y > 275) { doc.addPage(); y = 20; }
+        });
 
-        let y = 55;
-        if(fmt === 'commander') {
-            doc.text("COMMANDER:", 15, 50);
-            cardData.filter(c => c.isCmd).forEach(c => { doc.text(`1  ${c.name}`, 20, y); y+=7; });
-            y+=5; doc.text("DECK:", 15, y); y+=7;
-            cardData.filter(c => c.main > 0 && !c.isCmd).forEach(c => { doc.text(`${c.main}  ${c.name}`, 20, y); y+=7; if(y>270){doc.addPage(); y=20;}});
-        } else {
-            doc.text("MAIN DECK:", 15, 50); doc.text("SIDEBOARD:", 110, 50);
-            let yL = 55, yR = 55;
-            cardData.filter(c => c.main > 0).forEach(c => { doc.text(`${c.main}  ${c.name}`, 15, yL); yL+=7; });
-            cardData.filter(c => c.side > 0).forEach(c => { doc.text(`${c.side}  ${c.name}`, 110, yR); yR+=7; });
-        }
-        doc.rect(110, 240, 85, 45); doc.text("OFFICIAL USE ONLY", 115, 247);
+        // Sideboard
+        let ys = 60;
+        doc.setFontSize(11); doc.text("SIDEBOARD", 115, 55);
+        doc.setFontSize(9);
+        cardData.filter(c => c.side > 0).forEach(c => {
+            doc.text(`${c.side}`, 115, ys); doc.text(`${c.name}`, 125, ys);
+            doc.line(115, ys+1, 195, ys+1);
+            ys += 7;
+        });
+
+        // BLOC JUGES (BAS DE PAGE)
+        let bj = 240;
+        doc.rect(110, bj, 85, 45); 
+        doc.setFontSize(10); doc.text("FOR OFFICIAL USE ONLY", 115, bj + 7);
+        doc.setFontSize(8);
+        doc.text("Deck Check Rd #:", 115, bj + 15); doc.rect(145, bj + 12, 10, 5);
+        doc.text("Status:", 115, bj + 25); doc.text("OK / FAIL", 145, bj + 25);
+        doc.text("Judge Signature:", 115, bj + 35); doc.line(145, bj + 35, 190, bj + 35);
+        doc.text("Main Deck Count:", 20, bj + 35); doc.text(`${cardData.reduce((s,c)=>s+c.main,0)}`, 50, bj + 35);
+        doc.text("Sideboard Count:", 20, bj + 42); doc.text(`${cardData.reduce((s,c)=>s+c.side,0)}`, 50, bj + 42);
+
         doc.save(`Decklist_${last}.pdf`);
     }
 </script>
