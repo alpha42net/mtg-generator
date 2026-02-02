@@ -2,38 +2,36 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Manager v27 - Officiel MTG & Sport Pro</title>
+    <title>Manager v28 - L'Outil Ultime</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --gold: #d4af37; --dark: #1a1a1a; --green: #27ae60; --border: #e1e4e8; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; margin: 0; }
-        
-        /* Navigation & UI */
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 4px solid var(--gold); position: sticky; top: 0; z-index: 1000; }
         .nav-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
         .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; max-width: 1400px; margin: 0 auto; }
-        
-        button { padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
+        button { padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; }
         .btn-mode { background: #333; color: #888; }
         .btn-mode.active { background: var(--gold); color: black; }
         input, select { background: #2b2b2b; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; width: 100%; font-size: 0.8rem; }
         
-        /* Rendu Pages */
+        /* Catalogue Style */
         .page { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 12mm; box-sizing: border-box; page-break-after: always; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
         .grid-10 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 6mm; height: 100%; }
-        .card-item { border: 1px solid var(--border); border-radius: 8px; display: flex; height: 52mm; overflow: hidden; position: relative; }
+        .card-item { border: 1px solid var(--border); border-radius: 8px; display: flex; height: 52mm; overflow: hidden; position: relative; background: #fff; }
         .img-container { width: 95px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); }
-        .card-item img { max-height: 100%; max-width: 100%; object-fit: contain; }
+        .card-item img { max-height: 95%; max-width: 95%; object-fit: contain; }
         .card-info { flex: 1; padding: 10px; display: flex; flex-direction: column; min-width: 0; }
         .card-price { font-size: 1.6rem; font-weight: 800; color: var(--green); margin-top: auto; }
+        .magic-meta { font-size: 0.65rem; color: #666; margin-top: 2px; line-height: 1.1; }
 
-        /* Editeur */
-        .editor-container { max-width: 1100px; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        /* Editor Table */
+        .editor-container { max-width: 1200px; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 10px; background: #f8f9fa; border-bottom: 2px solid var(--gold); font-size: 0.7rem; }
-        td { padding: 8px; border-bottom: 1px solid #eee; }
-        .qty-edit { width: 55px; padding: 5px; border: 1px solid #ccc; text-align: center; font-weight: bold; }
+        td { padding: 8px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+        .qty-edit { width: 60px; padding: 5px; border: 1px solid #ccc; text-align: center; }
 
         @media print { #ui-gate, .editor-container { display: none !important; } .page { margin: 0; box-shadow: none; width: 100%; } }
     </style>
@@ -43,19 +41,18 @@
 <div id="ui-gate">
     <div class="nav-btns">
         <button id="btn-cat" class="btn-mode active" onclick="switchMode('cat')">💰 Catalogue</button>
-        <button id="btn-edit" class="btn-mode" onclick="switchMode('edit')">⚙️ Stock & Prix</button>
+        <button id="btn-edit" class="btn-mode" onclick="switchMode('edit')">⚙️ Ajustements Prix/Stock</button>
         <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">🎴 Decklist Officielle</button>
         <button id="btn-cover" class="btn-mode" onclick="switchMode('cover')">🖼️ Couverture</button>
     </div>
     <div class="controls-grid">
-        <div><label>Source</label><select id="dataSource"><option value="mtg">Magic (Scryfall)</option><option value="hockey">Hockey (Sport)</option></select></div>
+        <div><label>Source</label><select id="dataSource"><option value="mtg">Magic (Full Data)</option><option value="hockey">Hockey / Sport</option></select></div>
         <div><label>CSV</label><input type="file" id="csvIn" accept=".csv" onchange="processData()"></div>
-        <div><label>Format</label><select id="gameFormat" onchange="render()"><option value="standard">Standard (60+15)</option><option value="commander">Commander (100)</option></select></div>
+        <div><label>Format Deck</label><select id="gameFormat" onchange="render()"><option value="standard">Standard (60+15)</option><option value="commander">Commander (100)</option></select></div>
         <div><label>Joueur</label><input type="text" id="playerName" placeholder="Nom Complet"></div>
-        <div><label>Événement</label><input type="text" id="eventName" placeholder="Nom du Tournoi"></div>
         <div style="display:flex; gap:5px; align-items:flex-end;">
-            <button onclick="render()" style="background:#444; color:white; flex:1;">🔄</button>
-            <button onclick="handleExport()" style="background:var(--green); color:white; flex:2;">EXPORT PDF</button>
+            <button onclick="render()" style="background:#444; color:white; flex:1;">🔄 Refresh</button>
+            <button onclick="handleExport()" style="background:var(--green); color:white; flex:2;">Générer PDF</button>
         </div>
     </div>
 </div>
@@ -85,19 +82,26 @@
                     let name = row["product-name"] || row["Card Name"];
                     let item = {
                         name: name,
-                        set: row["console-name"] || row["Set"] || "Inconnu",
+                        set: row["console-name"] || row["Set"] || "Série Inconnue",
                         price: (parseFloat(row["price-in-pennies"])/100) || parseFloat(row["Price (USD)"]) || 0,
                         qty: parseInt(row["quantity"]) || 1,
-                        main: 0, side: 0, image: "", id: row["id"] || ""
+                        main: 0, side: 0, image: "", 
+                        meta: "", rarity: ""
                     };
+                    
                     if (source === 'mtg') {
                         try {
                             const r = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
                             const d = await r.json();
                             item.image = d.image_uris ? d.image_uris.normal : "";
+                            item.meta = `${d.mana_cost || ''} | ${d.type_line}`;
+                            item.rarity = d.rarity.toUpperCase();
+                            if(!row["Set"]) item.set = d.set_name;
                         } catch(e) {}
                     } else {
-                        item.image = item.id ? `https://www.pricecharting.com/game-photos?id=${item.id}` : "";
+                        // FIX IMAGES SPORT: Utilise l'ID ou recherche par nom
+                        let cardId = row["id"] || "";
+                        item.image = cardId ? `https://www.pricecharting.com/game-photos?id=${cardId}` : `https://images.clothes.com/search?q=${encodeURIComponent(name + ' ' + item.set)}`;
                     }
                     cardData.push(item);
                 }
@@ -122,8 +126,9 @@
                         <div style="position:absolute; top:5px; right:5px; background:var(--gold); font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:bold;">x${c.qty}</div>
                         <div class="img-container"><img src="${c.image}" onerror="this.src='https://via.placeholder.com/100x140?text=IMAGE'"></div>
                         <div class="card-info">
-                            <small style="color:#999; font-weight:bold; font-size:0.6rem;">${c.set}</small>
-                            <div style="font-size:0.85rem; margin:3px 0;"><b>${c.name}</b></div>
+                            <small style="color:#999; font-weight:bold; font-size:0.55rem; text-transform:uppercase;">${c.set} ${c.rarity ? '• '+c.rarity : ''}</small>
+                            <div style="font-size:0.85rem; margin:2px 0;"><b>${c.name}</b></div>
+                            ${c.meta ? `<div class="magic-meta">${c.meta}</div>` : ''}
                             <div class="card-price">${c.price.toFixed(2)}$</div>
                         </div>
                     </div>`;
@@ -132,14 +137,7 @@
             }
         } 
         else if (currentMode === 'edit' || currentMode === 'deck') {
-            let html = `<div class="editor-container">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3>${currentMode === 'edit' ? 'Stock & Prix' : 'Édition Decklist'}</h3>
-                    <div style="background:var(--gold); padding:5px 15px; border-radius:4px; font-weight:bold; font-size:0.8rem;">
-                        ${currentMode === 'deck' ? `Total Main: ${cardData.reduce((s,c)=>s+c.main,0)} / Side: ${cardData.reduce((s,c)=>s+c.side,0)}` : `Valeur Totale: ${cardData.reduce((s,c)=>s+(c.price*c.qty),0).toFixed(2)}$`}
-                    </div>
-                </div>
-                <table><tr><th>Carte</th><th>Série</th>`;
+            let html = `<div class="editor-container"><h3>${currentMode === 'edit' ? 'Ajustements Stock & Prix' : 'Édition Decklist'}</h3><table><tr><th>Carte</th><th>Série</th>`;
             html += currentMode === 'edit' ? `<th>Prix ($)</th><th>Stock</th>` : `<th>Main Deck</th>${format === 'standard' ? '<th>Sideboard</th>' : ''}`;
             html += `</tr>`;
             cardData.forEach((c, i) => {
@@ -157,52 +155,26 @@
         }
         else if (currentMode === 'cover') {
             out.innerHTML = `<div class="page"><div style="height:100%; border:15px double var(--gold); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
-                <h1 style="font-size:4rem; margin:0;">INVENTAIRE</h1>
+                <h1 style="font-size:4rem; margin:0;">INVENTAIRE PRO</h1>
                 <h2 style="font-size:1.5rem; color:var(--gold); letter-spacing:5px;">${document.getElementById('playerName').value || 'COLLECTION'}</h2>
-                <div style="margin:40px 0; font-size:1.2rem;">${cardData.length} Références • ${cardData.reduce((s,c)=>s+c.qty,0)} Cartes</div>
-                <p>Généré le ${new Date().toLocaleDateString()}</p>
+                <div style="margin:40px 0; font-size:1.2rem;">${cardData.length} Cartes Répertoriées</div>
+                <p>Date: ${new Date().toLocaleDateString()}</p>
             </div></div>`;
         }
     }
 
     function handleExport() {
-        if(currentMode === 'cat' || currentMode === 'cover') { window.print(); return; }
+        if(currentMode !== 'deck') { window.print(); return; }
         const { jsPDF } = window.jspdf; const doc = new jsPDF();
-        const fmt = document.getElementById('gameFormat').value;
         const player = (document.getElementById('playerName').value || "JOUEUR").toUpperCase();
-        const event = (document.getElementById('eventName').value || "TOURNOI").toUpperCase();
-
-        // DESIGN OFFICIEL RIGOUREUX
-        doc.setFontSize(18); doc.text("DECK REGISTRATION SHEET", 105, 15, {align:"center"});
-        doc.setFontSize(8); doc.text("PRINT CLEARLY USING ENGLISH CARD NAMES", 105, 20, {align:"center"});
-        
-        doc.setLineWidth(0.5); doc.rect(15, 25, 180, 20); // Header Box
-        doc.setFontSize(10); doc.text(`PLAYER NAME: ${player}`, 20, 32); doc.text(`EVENT: ${event}`, 20, 39);
-        doc.text(`DATE: ${new Date().toLocaleDateString()}`, 150, 32); doc.text(`FORMAT: ${fmt.toUpperCase()}`, 150, 39);
-
-        let y = 60; doc.setFontSize(11); doc.text("QTY  CARD NAME (MAIN DECK)", 15, 55);
-        doc.setFontSize(9);
+        doc.setFontSize(18); doc.text("OFFICIAL DECK REGISTRATION SHEET", 105, 15, {align:"center"});
+        doc.setFontSize(10); doc.rect(15, 25, 180, 15); doc.text(`PLAYER: ${player}`, 20, 35);
+        let y = 60;
         cardData.filter(c => c.main > 0).forEach(c => {
-            doc.text(`${c.main}`, 15, y); doc.text(`${c.name.toUpperCase()}`, 28, y); doc.line(15, y+1, 100, y+1);
-            y += 7; if(y > 240) { doc.addPage(); y = 25; }
+            doc.text(`${c.main}  ${c.name}`, 15, y); doc.line(15, y+1, 100, y+1);
+            y += 7; if(y > 250) { doc.addPage(); y = 20; }
         });
-
-        if(fmt === 'standard') {
-            let ys = 60; doc.setFontSize(11); doc.text("QTY  SIDEBOARD", 110, 55);
-            doc.setFontSize(9);
-            cardData.filter(c => c.side > 0).forEach(c => {
-                doc.text(`${c.side}`, 110, ys); doc.text(`${c.name.toUpperCase()}`, 123, ys); doc.line(110, ys+1, 195, ys+1);
-                ys += 7;
-            });
-        }
-
-        // JUDGE FOOTER
-        doc.rect(110, 250, 85, 35); doc.setFontSize(8); doc.text("OFFICIAL USE ONLY", 115, 256);
-        doc.text("Main Deck Count: ________", 115, 265); doc.text("Sideboard Count: ________", 115, 272); doc.text("Judge Signature: ________________", 115, 281);
-        
-        doc.setFontSize(12); doc.text(`TOTAL MAIN: ${cardData.reduce((s,c)=>s+c.main,0)}`, 15, 265);
-        doc.text(`TOTAL SIDE: ${cardData.reduce((s,c)=>s+c.side,0)}`, 15, 275);
-
+        doc.rect(110, 240, 85, 40); doc.text("JUDGE SIGNATURE", 115, 250);
         doc.save(`Decklist_${player}.pdf`);
     }
 </script>
