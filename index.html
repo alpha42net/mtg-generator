@@ -2,30 +2,37 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Manager Pro - MTG & Hockey</title>
+    <title>Manager Pro v3 - MTG & Hockey</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --gold: #d4af37; --dark: #1a1a1a; --green: #27ae60; --red: #e74c3c; --blue: #3498db; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f7f6; }
         #ui-gate { background: white; padding: 20px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; max-width: 1200px; margin: 15px auto; }
-        .nav-btns { display: flex; gap: 10px; justify-content: center; }
-        button { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; max-width: 1200px; margin: 15px auto; }
+        .nav-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; }
+        button { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
         .btn-mode { background: #6c757d; color: white; }
         .btn-mode.active { background: var(--dark); border: 2px solid var(--gold); }
-        .btn-pdf { background: var(--red); color: white; width: 100%; margin-top: 15px; font-size: 1.1rem; }
+        .btn-pdf { background: var(--red); color: white; width: 100%; margin-top: 10px; font-size: 1.1rem; }
+        .btn-reset { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; font-size: 0.75rem; padding: 8px; }
         input, select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        
         .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
         .editor-box { background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         th { background: var(--dark); color: white; padding: 12px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; }
         .qty-input { width: 90px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; text-align: right; font-weight: bold; }
-        .profit-tag { color: var(--blue); font-weight: bold; }
+
+        /* PDF PAGES */
         .page { width: 210mm; min-height: 296mm; background: white; margin: 30px auto; padding: 15mm; box-sizing: border-box; page-break-after: always; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-        .card-item { display: flex; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 15px; page-break-inside: avoid; align-items: center; }
-        .card-item img { height: 180px; width: 130px; object-fit: contain; border-radius: 8px; margin-right: 20px; background: #f9f9f9; }
+        .cover-page { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 10px double var(--gold); background: var(--dark); color: white; text-align: center; position: relative; }
+        .cover-img { height: 400px; border: 3px solid var(--gold); border-radius: 10px; z-index: 5; margin-bottom: 20px; }
+        .cover-stats { background: var(--gold); color: black; padding: 10px 30px; border-radius: 30px; font-size: 1.4rem; font-weight: bold; }
+
+        .card-item { display: flex; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 15px; align-items: center; }
+        .card-item img { height: 180px; width: 130px; object-fit: contain; margin-right: 20px; background: #f9f9f9; }
         #progress-bar { width: 0%; height: 5px; background: var(--green); position: fixed; top: 0; left: 0; z-index: 2000; }
         @media print { #ui-gate, .container { display: none !important; } .page { margin: 0; box-shadow: none; width: 100%; } }
     </style>
@@ -36,23 +43,26 @@
 
 <div id="ui-gate">
     <div class="nav-btns">
-        <button id="btn-cat" class="btn-mode active" onclick="switchMode('cat')">📖 Catalogue & Profits</button>
-        <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">🎴 Decklist Officielle</button>
+        <button id="btn-cat" class="btn-mode active" onclick="switchMode('cat')">📖 Catalogue</button>
+        <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">🎴 Decklist</button>
     </div>
     <div class="controls-grid">
-        <div><label>Fichier CSV</label><input type="file" id="csvIn" accept=".csv" onchange="processData()"></div>
-        <div><label>Tri</label>
+        <div>
+            <label>CSV PriceCharting</label>
+            <input type="file" id="csvIn" accept=".csv" onchange="processData()">
+            <button class="btn-reset" style="width:100%; margin-top:5px;" onclick="location.reload()">🔄 Vider & Nouveau CSV</button>
+        </div>
+        <div>
+            <label>Trier</label>
             <select id="sortOrder" onchange="render()">
-                <option value="price_desc">Prix (Haut)</option>
-                <option value="profit_desc">Profit (Haut)</option>
+                <option value="price_desc">Prix (Décroissant)</option>
                 <option value="name_asc">Nom (A-Z)</option>
             </select>
         </div>
-        <div><label>Nom Joueur</label><input type="text" id="lastName" placeholder="BELEREN" oninput="render()"></div>
-        <div><label>Événement</label><input type="text" id="event" placeholder="Regional Qualifier" oninput="render()"></div>
+        <div><label>Titre / Nom Famille</label><input type="text" id="lastName" placeholder="MA COLLECTION" oninput="render()"></div>
+        <div><label>Prénom / Event</label><input type="text" id="firstName" placeholder="Jace" oninput="render()"></div>
     </div>
-    <button class="btn-pdf" id="pdfBtnLabel" onclick="handleFinalExport()">📄 GÉNÉRER PDF FINAL</button>
-    <button class="btn-mode" style="width:100%; margin-top:5px; background:#eee; color:#333;" onclick="location.reload()">🔄 Refresh / Nouveau CSV</button>
+    <button class="btn-pdf" onclick="handleFinalExport()">📄 GÉNÉRER LE PDF COMPLET</button>
 </div>
 
 <div class="container">
@@ -75,7 +85,6 @@
         currentMode = m;
         document.getElementById('btn-cat').classList.toggle('active', m === 'cat');
         document.getElementById('btn-deck').classList.toggle('active', m === 'deck');
-        document.getElementById('pdfBtnLabel').innerText = m === 'cat' ? "📄 GÉNÉRER LE CATALOGUE (IMPRESSION)" : "📄 GÉNÉRER LA DECKLIST OFFICIELLE (PDF)";
         render();
     }
 
@@ -96,11 +105,11 @@
                     let price = (parseFloat(row["price-in-pennies"])/100) || parseFloat(row["Price (USD)"]) || 0;
                     let cost = (parseFloat(row["cost-basis-in-pennies"])/100) || 0;
                     
-                    // Priorité Image : PriceCharting direct si ID présent, sinon Scryfall pour MTG
+                    // Image par ID PriceCharting ou Scryfall
                     let imgUrl = id ? `https://www.pricecharting.com/game-photos?id=${id}` : "";
                     let isLand = false;
 
-                    if (!id) { // Si pas d'ID (probablement export MTG standard), chercher Scryfall
+                    if (!id) { 
                         try {
                             const resp = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(name)}`);
                             const d = await resp.json();
@@ -112,7 +121,7 @@
                     cardData.push({
                         name, id, suggestedPrice: price, sellPrice: price, cost,
                         qty: parseInt(row["quantity"]) || 1, main: parseInt(row["quantity"]) || 1, side: 0,
-                        type: row["console-name"] || "Card", image: imgUrl, isLand
+                        type: row["console-name"] || "Item", image: imgUrl, isLand
                     });
                     bar.style.width = ((i+1)/res.data.length*100) + "%";
                 }
@@ -121,19 +130,9 @@
         });
     }
 
-    function updatePrice(idx, val) {
-        cardData[idx].sellPrice = parseFloat(val) || 0;
-        const prof = document.getElementById(`profit-${idx}`);
-        if(prof) prof.innerText = (cardData[idx].sellPrice - cardData[idx].cost).toFixed(2) + " $";
-    }
-
     function render() {
         const sortVal = document.getElementById('sortOrder').value;
-        cardData.sort((a,b) => {
-            if(sortVal === 'price_desc') return b.sellPrice - a.sellPrice;
-            if(sortVal === 'profit_desc') return (b.sellPrice - b.cost) - (a.sellPrice - a.cost);
-            return a.name.localeCompare(b.name);
-        });
+        cardData.sort((a,b) => (sortVal === 'price_desc') ? b.sellPrice - a.sellPrice : a.name.localeCompare(b.name));
 
         const head = document.getElementById('table-head');
         const body = document.getElementById('table-body');
@@ -141,64 +140,51 @@
         out.innerHTML = '';
 
         if(currentMode === 'cat') {
-            head.innerHTML = `<tr><th>Item</th><th>Suggéré</th><th>Ton Prix de Vente</th><th>Profit</th></tr>`;
+            head.innerHTML = `<tr><th>Item</th><th>Prix</th><th>Action</th><th>Profit</th></tr>`;
             body.innerHTML = cardData.map((c, i) => `
                 <tr>
                     <td><b>${c.name}</b></td>
                     <td>${c.suggestedPrice.toFixed(2)}$</td>
-                    <td><input type="number" step="0.01" class="qty-input" value="${c.sellPrice.toFixed(2)}" oninput="updatePrice(${i}, this.value)"> $</td>
-                    <td id="profit-${i}" class="profit-tag">${(c.sellPrice - c.cost).toFixed(2)}$</td>
+                    <td><input type="number" step="0.01" class="qty-input" value="${c.sellPrice.toFixed(2)}" oninput="cardData[${i}].sellPrice=parseFloat(this.value)||0; document.getElementById('pr-${i}').innerText=(cardData[${i}].sellPrice-cardData[${i}].cost).toFixed(2)+'$'"> $</td>
+                    <td id="pr-${i}" style="color:var(--blue); font-weight:bold;">${(c.sellPrice - c.cost).toFixed(2)}$</td>
                 </tr>`).join('');
+
+            if(cardData.length > 0) {
+                const total = cardData.reduce((s,c) => s + (c.sellPrice * c.qty), 0);
+                out.innerHTML += `<div class="page"><div class="cover-page">
+                    <h1 style="font-size:3rem;">${document.getElementById('lastName').value || "CATALOGUE"}</h1>
+                    <img class="cover-img" src="${cardData[0].image || ''}">
+                    <div class="cover-stats">VALEUR TOTALE : ${total.toFixed(2)} $</div>
+                </div></div>`;
+            }
 
             for (let i = 0; i < cardData.length; i += 3) {
                 let p = document.createElement('div'); p.className = 'page';
                 cardData.slice(i, i+3).forEach(c => {
                     p.innerHTML += `<div class="card-item">
-                        <img src="${c.image || 'https://via.placeholder.com/130x180?text=No+Image'}">
-                        <div class="card-info"><b>${c.name}</b><br><small>${c.type}</small>
-                        <div style="font-size:1.6rem; font-weight:bold; color:var(--green); margin-top:15px; text-align:right;">${c.sellPrice.toFixed(2)} $</div></div></div>`;
+                        <img src="${c.image || ''}">
+                        <div style="flex:1;"><b>${c.name}</b><br><small>${c.type}</small>
+                        <div style="font-size:1.6rem; font-weight:bold; color:var(--green); text-align:right;">${c.sellPrice.toFixed(2)} $</div></div></div>`;
                 });
                 out.appendChild(p);
             }
         } else {
-            head.innerHTML = `<tr><th>Carte</th><th>Main Deck</th><th>Sideboard</th></tr>`;
+            head.innerHTML = `<tr><th>Carte</th><th>Main</th><th>Side</th></tr>`;
             body.innerHTML = cardData.map((c, i) => `
-                <tr>
-                    <td><b>${c.name}</b></td>
-                    <td><input type="number" class="qty-input" style="width:60px" value="${c.main}" oninput="cardData[${i}].main=this.value"></td>
-                    <td><input type="number" class="qty-input" style="width:60px" value="${c.side}" oninput="cardData[${i}].side=this.value"></td>
-                </tr>`).join('');
+                <tr><td>${c.name}</td>
+                <td><input type="number" class="qty-input" value="${c.main}" oninput="cardData[${i}].main=parseInt(this.value)||0"></td>
+                <td><input type="number" class="qty-input" value="${c.side}" oninput="cardData[${i}].side=parseInt(this.value)||0"></td></tr>`).join('');
         }
     }
 
     function handleFinalExport() {
         if(currentMode === 'cat') { window.print(); return; }
-        
         const doc = new jsPDF();
-        const nom = (document.getElementById('lastName').value || "JOUEUR").toUpperCase();
-        const event = (document.getElementById('event').value || "TOURNOI");
-
-        doc.setFont("helvetica", "bold"); doc.setFontSize(18);
-        doc.text("DECKLIST OFFICIELLE - MTG", 105, 15, {align:"center"});
-        doc.setFontSize(10); doc.text(`NOM: ${nom}  |  EVENT: ${event}`, 20, 25);
-
-        let yL = 45, yR = 45;
-        doc.setFontSize(11); doc.text("SORTS", 20, 40); doc.text("LANDS / SIDE", 110, 40);
-        doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-
-        cardData.filter(c => c.main > 0 && !c.isLand).forEach(c => {
-            doc.text(`${c.main}  ${c.name}`, 20, yL); doc.line(20, yL+1, 100, yL+1); yL += 7;
-        });
-        cardData.filter(c => c.main > 0 && c.isLand).forEach(c => {
-            doc.text(`${c.main}  ${c.name}`, 110, yR); doc.line(110, yR+1, 190, yR+1); yR += 7;
-        });
-        yR += 10; doc.setFont("helvetica", "bold"); doc.text("SIDEBOARD:", 110, yR); yR += 7;
-        doc.setFont("helvetica", "normal");
-        cardData.filter(c => c.side > 0).forEach(c => {
-            doc.text(`${c.side}  ${c.name}`, 110, yR); doc.line(110, yR+1, 190, yR+1); yR += 7;
-        });
-
-        doc.save(`Decklist_${nom}.pdf`);
+        doc.setFontSize(18); doc.text("DECKLIST OFFICIELLE", 105, 20, {align:"center"});
+        doc.setFontSize(10); doc.text(`NOM: ${document.getElementById('lastName').value}`, 20, 35);
+        let y = 50;
+        cardData.forEach(c => { if(c.main > 0) { doc.text(`${c.main}  ${c.name}`, 20, y); y+=7; } });
+        doc.save("Decklist.pdf");
     }
 </script>
 </body>
