@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Manager Pro v3 - MTG & Hockey</title>
+    <title>Manager Pro - Decklist & Catalogue</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
@@ -11,11 +11,10 @@
         #ui-gate { background: white; padding: 20px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; max-width: 1200px; margin: 15px auto; }
         .nav-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; }
-        button { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
+        button { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         .btn-mode { background: #6c757d; color: white; }
         .btn-mode.active { background: var(--dark); border: 2px solid var(--gold); }
-        .btn-pdf { background: var(--red); color: white; width: 100%; margin-top: 10px; font-size: 1.1rem; }
-        .btn-reset { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; font-size: 0.75rem; padding: 8px; }
+        .btn-pdf { background: var(--red); color: white; width: 100%; margin-top: 10px; font-size: 1.1rem; border-bottom: 4px solid #b33939; }
         input, select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
         
         .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
@@ -23,16 +22,14 @@
         table { width: 100%; border-collapse: collapse; }
         th { background: var(--dark); color: white; padding: 12px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; }
-        .qty-input { width: 90px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; text-align: right; font-weight: bold; }
+        .qty-input { width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 4px; text-align: center; font-weight: bold; }
 
-        /* PDF PAGES */
+        /* PDF RENDERING */
         .page { width: 210mm; min-height: 296mm; background: white; margin: 30px auto; padding: 15mm; box-sizing: border-box; page-break-after: always; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-        .cover-page { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 10px double var(--gold); background: var(--dark); color: white; text-align: center; position: relative; }
-        .cover-img { height: 400px; border: 3px solid var(--gold); border-radius: 10px; z-index: 5; margin-bottom: 20px; }
-        .cover-stats { background: var(--gold); color: black; padding: 10px 30px; border-radius: 30px; font-size: 1.4rem; font-weight: bold; }
-
+        .cover-page { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 10px double var(--gold); background: var(--dark); color: white; text-align: center; }
+        .cover-img { height: 400px; border: 3px solid var(--gold); border-radius: 10px; margin-bottom: 20px; }
         .card-item { display: flex; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 15px; align-items: center; }
-        .card-item img { height: 180px; width: 130px; object-fit: contain; margin-right: 20px; background: #f9f9f9; }
+        .card-item img { height: 180px; width: 130px; object-fit: contain; margin-right: 20px; }
         #progress-bar { width: 0%; height: 5px; background: var(--green); position: fixed; top: 0; left: 0; z-index: 2000; }
         @media print { #ui-gate, .container { display: none !important; } .page { margin: 0; box-shadow: none; width: 100%; } }
     </style>
@@ -43,26 +40,26 @@
 
 <div id="ui-gate">
     <div class="nav-btns">
-        <button id="btn-cat" class="btn-mode active" onclick="switchMode('cat')">📖 Catalogue</button>
-        <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">🎴 Decklist</button>
+        <button id="btn-cat" class="btn-mode active" onclick="switchMode('cat')">📖 Catalogue de Vente</button>
+        <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">🎴 Decklist Officielle</button>
     </div>
     <div class="controls-grid">
         <div>
             <label>CSV PriceCharting</label>
             <input type="file" id="csvIn" accept=".csv" onchange="processData()">
-            <button class="btn-reset" style="width:100%; margin-top:5px;" onclick="location.reload()">🔄 Vider & Nouveau CSV</button>
+            <button style="width:100%; font-size: 0.7rem; margin-top:5px;" onclick="location.reload()">🔄 Refresh</button>
         </div>
         <div>
-            <label>Trier</label>
-            <select id="sortOrder" onchange="render()">
-                <option value="price_desc">Prix (Décroissant)</option>
-                <option value="name_asc">Nom (A-Z)</option>
+            <label>Format Jeu</label>
+            <select id="gameFormat" onchange="render()">
+                <option value="standard">Standard / Modern (60/15)</option>
+                <option value="commander">Commander (100)</option>
             </select>
         </div>
-        <div><label>Titre / Nom Famille</label><input type="text" id="lastName" placeholder="MA COLLECTION" oninput="render()"></div>
-        <div><label>Prénom / Event</label><input type="text" id="firstName" placeholder="Jace" oninput="render()"></div>
+        <div><label>Nom de Famille</label><input type="text" id="lastName" placeholder="BELEREN" oninput="render()"></div>
+        <div><label>Prénom / Event</label><input type="text" id="firstName" placeholder="Jace / Regional" oninput="render()"></div>
     </div>
-    <button class="btn-pdf" onclick="handleFinalExport()">📄 GÉNÉRER LE PDF COMPLET</button>
+    <button class="btn-pdf" id="pdfActionBtn" onclick="handleFinalExport()">📄 GÉNÉRER LE PDF</button>
 </div>
 
 <div class="container">
@@ -100,14 +97,12 @@
                     const row = res.data[i];
                     let name = row["product-name"] || row["Card Name"] || "";
                     if(!name) continue;
-
                     let id = row["id"] || "";
                     let price = (parseFloat(row["price-in-pennies"])/100) || parseFloat(row["Price (USD)"]) || 0;
                     let cost = (parseFloat(row["cost-basis-in-pennies"])/100) || 0;
                     
-                    // Image par ID PriceCharting ou Scryfall
                     let imgUrl = id ? `https://www.pricecharting.com/game-photos?id=${id}` : "";
-                    let isLand = false;
+                    let isLand = false, isLegendary = false;
 
                     if (!id) { 
                         try {
@@ -115,13 +110,14 @@
                             const d = await resp.json();
                             imgUrl = d.image_uris ? d.image_uris.normal : "";
                             isLand = d.type_line ? d.type_line.includes("Land") : false;
+                            isLegendary = d.type_line ? d.type_line.includes("Legendary") : false;
                         } catch(e) {}
                     }
 
                     cardData.push({
-                        name, id, suggestedPrice: price, sellPrice: price, cost,
-                        qty: parseInt(row["quantity"]) || 1, main: parseInt(row["quantity"]) || 1, side: 0,
-                        type: row["console-name"] || "Item", image: imgUrl, isLand
+                        name, id, price, sellPrice: price, cost,
+                        qty: parseInt(row["quantity"]) || 1, main: 0, side: 0, isCmd: false,
+                        type: row["console-name"] || "Item", image: imgUrl, isLand, isLegendary
                     });
                     bar.style.width = ((i+1)/res.data.length*100) + "%";
                 }
@@ -131,60 +127,72 @@
     }
 
     function render() {
-        const sortVal = document.getElementById('sortOrder').value;
-        cardData.sort((a,b) => (sortVal === 'price_desc') ? b.sellPrice - a.sellPrice : a.name.localeCompare(b.name));
-
         const head = document.getElementById('table-head');
         const body = document.getElementById('table-body');
         const out = document.getElementById('catalog-render');
+        const fmt = document.getElementById('gameFormat').value;
         out.innerHTML = '';
 
         if(currentMode === 'cat') {
-            head.innerHTML = `<tr><th>Item</th><th>Prix</th><th>Action</th><th>Profit</th></tr>`;
-            body.innerHTML = cardData.map((c, i) => `
-                <tr>
-                    <td><b>${c.name}</b></td>
-                    <td>${c.suggestedPrice.toFixed(2)}$</td>
-                    <td><input type="number" step="0.01" class="qty-input" value="${c.sellPrice.toFixed(2)}" oninput="cardData[${i}].sellPrice=parseFloat(this.value)||0; document.getElementById('pr-${i}').innerText=(cardData[${i}].sellPrice-cardData[${i}].cost).toFixed(2)+'$'"> $</td>
-                    <td id="pr-${i}" style="color:var(--blue); font-weight:bold;">${(c.sellPrice - c.cost).toFixed(2)}$</td>
-                </tr>`).join('');
-
+            head.innerHTML = `<tr><th>Item</th><th>Suggéré</th><th>Vente</th><th>Profit</th></tr>`;
+            body.innerHTML = cardData.map((c, i) => `<tr>
+                <td><b>${c.name}</b></td><td>${c.price.toFixed(2)}$</td>
+                <td><input type="number" step="0.01" class="qty-input" value="${c.sellPrice.toFixed(2)}" oninput="cardData[${i}].sellPrice=parseFloat(this.value)||0; document.getElementById('p-${i}').innerText=(cardData[${i}].sellPrice-cardData[${i}].cost).toFixed(2)+'$'"></td>
+                <td id="p-${i}" style="color:var(--blue); font-weight:bold;">${(c.sellPrice - c.cost).toFixed(2)}$</td></tr>`).join('');
+            
+            // Catalogue Rendering (Cover + Pages)
             if(cardData.length > 0) {
-                const total = cardData.reduce((s,c) => s + (c.sellPrice * c.qty), 0);
                 out.innerHTML += `<div class="page"><div class="cover-page">
-                    <h1 style="font-size:3rem;">${document.getElementById('lastName').value || "CATALOGUE"}</h1>
+                    <h1>${document.getElementById('lastName').value || "CATALOGUE"}</h1>
                     <img class="cover-img" src="${cardData[0].image || ''}">
-                    <div class="cover-stats">VALEUR TOTALE : ${total.toFixed(2)} $</div>
+                    <div style="font-weight:bold; font-size:1.5rem;">VALEUR TOTALE: ${cardData.reduce((s,c)=>s+(c.sellPrice*c.qty),0).toFixed(2)}$</div>
                 </div></div>`;
             }
-
             for (let i = 0; i < cardData.length; i += 3) {
                 let p = document.createElement('div'); p.className = 'page';
                 cardData.slice(i, i+3).forEach(c => {
-                    p.innerHTML += `<div class="card-item">
-                        <img src="${c.image || ''}">
-                        <div style="flex:1;"><b>${c.name}</b><br><small>${c.type}</small>
-                        <div style="font-size:1.6rem; font-weight:bold; color:var(--green); text-align:right;">${c.sellPrice.toFixed(2)} $</div></div></div>`;
+                    p.innerHTML += `<div class="card-item"><img src="${c.image || ''}"><div><b>${c.name}</b><br><small>${c.type}</small><div style="font-size:1.6rem; color:var(--green); text-align:right;">${c.sellPrice.toFixed(2)} $</div></div></div>`;
                 });
                 out.appendChild(p);
             }
         } else {
-            head.innerHTML = `<tr><th>Carte</th><th>Main</th><th>Side</th></tr>`;
-            body.innerHTML = cardData.map((c, i) => `
-                <tr><td>${c.name}</td>
+            // DECKLIST UI
+            head.innerHTML = `<tr><th>Carte</th><th>Main</th>${fmt === 'standard' ? '<th>Side</th>' : '<th>Commandant?</th>'}</tr>`;
+            body.innerHTML = cardData.map((c, i) => `<tr>
+                <td>${c.name}</td>
                 <td><input type="number" class="qty-input" value="${c.main}" oninput="cardData[${i}].main=parseInt(this.value)||0"></td>
-                <td><input type="number" class="qty-input" value="${c.side}" oninput="cardData[${i}].side=parseInt(this.value)||0"></td></tr>`).join('');
+                <td>${fmt === 'standard' ? 
+                    `<input type="number" class="qty-input" value="${c.side}" oninput="cardData[${i}].side=parseInt(this.value)||0">` : 
+                    `<input type="checkbox" ${c.isCmd ? 'checked' : ''} onchange="cardData[${i}].isCmd=this.checked">`}</td></tr>`).join('');
         }
     }
 
     function handleFinalExport() {
         if(currentMode === 'cat') { window.print(); return; }
         const doc = new jsPDF();
-        doc.setFontSize(18); doc.text("DECKLIST OFFICIELLE", 105, 20, {align:"center"});
-        doc.setFontSize(10); doc.text(`NOM: ${document.getElementById('lastName').value}`, 20, 35);
-        let y = 50;
-        cardData.forEach(c => { if(c.main > 0) { doc.text(`${c.main}  ${c.name}`, 20, y); y+=7; } });
-        doc.save("Decklist.pdf");
+        const fmt = document.getElementById('gameFormat').value;
+        const last = document.getElementById('lastName').value || "NOM";
+        
+        doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+        doc.text(`DECKLIST OFFICIELLE - ${fmt.toUpperCase()}`, 105, 15, {align:"center"});
+        doc.setFontSize(10); doc.text(`JOUEUR: ${last} / ${document.getElementById('firstName').value}`, 20, 25);
+
+        let y = 45;
+        if(fmt === 'commander') {
+            doc.text("COMMANDANT:", 20, 40);
+            cardData.filter(c => c.isCmd).forEach(c => { doc.text(`1 ${c.name}`, 25, y); y += 7; });
+            y += 5; doc.text("DECK (99):", 20, y); y += 7;
+            cardData.filter(c => c.main > 0 && !c.isCmd).forEach(c => {
+                doc.text(`${c.main} ${c.name}`, 25, y); y += 6;
+                if(y > 280) { doc.addPage(); y = 20; }
+            });
+        } else {
+            doc.text("MAIN DECK:", 20, 40); doc.text("SIDEBOARD:", 115, 40);
+            let yL = 47, yR = 47;
+            cardData.filter(c => c.main > 0).forEach(c => { doc.text(`${c.main} ${c.name}`, 20, yL); yL += 6; });
+            cardData.filter(c => c.side > 0).forEach(c => { doc.text(`${c.side} ${c.name}`, 115, yR); yR += 6; });
+        }
+        doc.save(`Decklist_${last}.pdf`);
     }
 </script>
 </body>
