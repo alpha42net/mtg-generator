@@ -2,218 +2,145 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Manager v39 - Total Mastery</title>
+    <title>Manager v43 - Judge Ready</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --gold: #d4af37; --dark: #1a1a1a; --green: #27ae60; --blue: #0e68ab; --white: #f8f8f8; --red: #d3202a; --black: #121212; --forest: #00733d; }
+        :root { --gold: #d4af37; --dark: #1a1a1a; --green: #27ae60; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; }
-        
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 4px solid var(--gold); position: sticky; top: 0; z-index: 1000; }
         .nav-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(115px, 1fr)); gap: 10px; max-width: 1600px; margin: 0 auto; align-items: end; }
-        
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; max-width: 1600px; margin: 0 auto; align-items: end; }
         button { padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; }
-        .btn-mode { background: #333; color: #aaa; }
+        .btn-mode { background: #333; color: #aaa; border: 1px solid #444; }
         .btn-mode.active { background: var(--gold); color: black; }
-        
         label { font-size: 0.6rem; font-weight: bold; color: var(--gold); text-transform: uppercase; display: block; margin-bottom: 4px; }
         input, select { background: #2b2b2b; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; width: 100%; font-size: 0.8rem; }
-
-        /* SYMBOLES MANA OFFICIELS (SVG) */
-        .mana { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; font-size: 10px; font-weight: bold; margin: 0 1px; border: 1px solid #000; color: white; box-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
-        .mana-W { background: radial-gradient(circle, #fffbd5, #f8f8f8); color: #444; border-color: #ccc; }
-        .mana-U { background: radial-gradient(circle, #ae92d1, #0e68ab); }
-        .mana-B { background: radial-gradient(circle, #929292, #121212); }
-        .mana-R { background: radial-gradient(circle, #f9aa8f, #d3202a); }
-        .mana-G { background: radial-gradient(circle, #9bd3ae, #00733d); }
-        .mana-N { background: #ccc; color: #000; border-color: #888; }
-
-        /* CATALOGUE */
-        .page { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 10mm; box-sizing: border-box; page-break-after: always; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .mana-icon { width: 16px; height: 16px; vertical-align: middle; margin: 0 1px; }
+        .page { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 10mm; box-sizing: border-box; page-break-after: always; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
         .grid-10 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 4mm; height: 100%; }
-        .card-item { border: 1px solid #ddd; border-radius: 6px; display: flex; height: 54mm; overflow: hidden; position: relative; }
-        .card-qty { position: absolute; top: 5px; right: 5px; background: #000; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; font-weight: bold; }
-        .img-container { width: 95px; min-width: 95px; background: #fdfdfd; display: flex; align-items: center; justify-content: center; border-right: 1px solid #eee; }
-        .card-item img { max-height: 94%; max-width: 90%; object-fit: contain; }
-        .card-info { flex: 1; padding: 8px 12px; display: flex; flex-direction: column; min-width: 0; }
-        .oracle { font-size: 0.6rem; color: #444; line-height: 1.2; margin-top: 4px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
-        .price { font-size: 1.8rem; font-weight: 900; color: var(--green); margin-top: auto; }
-
-        /* EDITOR */
-        .editor-container { max-width: 1200px; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; }
+        .card-item { border: 1px solid #eee; border-radius: 8px; display: flex; height: 54mm; overflow: hidden; position: relative; }
+        .card-qty { position: absolute; top: 5px; right: 5px; background: #000; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .img-container { width: 95px; min-width: 95px; background: #fff; display: flex; align-items: center; justify-content: center; border-right: 1px solid #f0f0f0; }
+        .card-item img { max-height: 92%; max-width: 90%; object-fit: contain; }
+        .card-price { font-size: 1.8rem; font-weight: 900; color: var(--green); margin-top: auto; }
+        .editor-container { max-width: 1200px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 10px; background: #f8f9fa; border-bottom: 2px solid var(--gold); font-size: 0.7rem; }
         td { padding: 8px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
-        .edit-input { width: 60px; padding: 5px; border: 1px solid #ccc; text-align: center; border-radius: 4px; font-weight: bold; }
-
         @media print { #ui-gate, .editor-container { display: none !important; } .page { margin: 0; box-shadow: none; width: 100%; } }
     </style>
 </head>
 <body>
-
 <div id="ui-gate">
     <div class="nav-btns">
-        <button id="btn-cat" class="btn-mode active" onclick="switchMode('cat')">💰 Catalogue</button>
-        <button id="btn-edit" class="btn-mode" onclick="switchMode('edit')">⚙️ Ajuster Prix/Stock</button>
-        <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">🎴 Decklist Builder</button>
+        <button id="btn-cover" class="btn-mode active" onclick="switchMode('cover')">🖼️ Couverture</button>
+        <button id="btn-cat" class="btn-mode" onclick="switchMode('cat')">💰 Catalogue</button>
+        <button id="btn-edit" class="btn-mode" onclick="switchMode('edit')">⚙️ Ajuster</button>
+        <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">🎴 Decklist</button>
     </div>
     <div class="controls-grid">
-        <div><label>Source</label><select id="dataSource"><option value="mtg">Magic (MTG)</option><option value="sport">Hockey / Sport</option></select></div>
-        <div><label>Fichier CSV</label><input type="file" id="csvIn" accept=".csv" onchange="processData()"></div>
-        <div><label>Tri</label><select id="sortOrder" onchange="applySortAndRender()"><option value="name_asc">A-Z</option><option value="price_desc">Prix $$$</option></select></div>
-        <div><label>Format</label><select id="gameFormat" onchange="render()"><option value="standard">Standard</option><option value="commander">Commander</option></select></div>
+        <div><label>Source</label><select id="dataSource"><option value="mtg">MTG (Scryfall)</option><option value="sport">Sport</option></select></div>
+        <div><label>CSV</label><input type="file" id="csvIn" accept=".csv" onchange="processData()"></div>
+        <div><label>Titre Album</label><input type="text" id="albumTitle" placeholder="Ma Collection" oninput="render()"></div>
         <div><label>Joueur</label><input type="text" id="playerName" placeholder="Nom Complet"></div>
-        <div><label>DCI / ID</label><input type="text" id="playerID" placeholder="ID Joueur"></div>
+        <div><label>DCI / Player ID</label><input type="text" id="playerID" placeholder="ID"></div>
         <div style="display:flex; gap:5px;">
             <button onclick="render()" style="background:#444; color:white; flex:1;">🔄</button>
-            <button onclick="handleExport()" style="background:var(--green); color:white; flex:2;">EXPORT PDF</button>
+            <button onclick="handleExport()" style="background:var(--green); color:white; flex:2;">PDF OFFICIEL</button>
         </div>
     </div>
 </div>
-
 <div id="main-content"></div>
-
 <script>
     let cardData = [];
-    let currentMode = 'cat';
-
-    function switchMode(m) {
-        currentMode = m;
-        document.querySelectorAll('.btn-mode').forEach(b => b.classList.toggle('active', b.id === `btn-${m}`));
-        render();
-    }
-
-    function getManaIcon(sym) {
-        let clean = sym.replace(/[{}]/g, '');
-        let char = clean.split('/')[0];
-        let cls = "mana-N";
-        if(char === 'W') cls = "mana-W";
-        if(char === 'U') cls = "mana-U";
-        if(char === 'B') cls = "mana-B";
-        if(char === 'R') cls = "mana-R";
-        if(char === 'G') cls = "mana-G";
-        return `<span class="mana ${cls}">${char}</span>`;
-    }
-
+    let currentMode = 'cover';
+    function switchMode(m) { currentMode = m; document.querySelectorAll('.btn-mode').forEach(b => b.classList.toggle('active', b.id === `btn-${m}`)); render(); }
     function formatMana(manaStr) {
         if(!manaStr) return '';
-        return manaStr.replace(/\{[^}]+\}/g, match => getManaIcon(match));
+        return manaStr.replace(/\{([^}]+)\}/g, (match, p1) => `<img src="https://svgs.scryfall.io/card-symbols/${p1.replace(/\//g, '').toUpperCase()}.svg" class="mana-icon">`);
     }
-
     async function processData() {
         const file = document.getElementById('csvIn').files[0];
         const source = document.getElementById('dataSource').value;
         if(!file) return;
-        cardData = [];
-        Papa.parse(file, {
-            header: true, skipEmptyLines: true,
-            complete: async (res) => {
-                let raw = res.data.filter(row => row["product-name"] || row["Card Name"]);
-                for (let row of raw) {
-                    let name = row["product-name"] || row["Card Name"];
-                    let item = {
-                        name: name,
-                        set: row["console-name"] || row["Set"] || "Série",
-                        price: (parseFloat(row["price-in-pennies"])/100) || parseFloat(row["Price (USD)"]) || 0,
-                        qty: parseInt(row["quantity"]) || 1,
-                        main: 0, side: 0, image: "", mana: "", oracle: "", type: ""
-                    };
-                    if(source === 'mtg') {
-                        try {
-                            const r = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
-                            const d = await r.json();
-                            item.image = d.image_uris?.normal || "";
-                            item.mana = d.mana_cost || "";
-                            item.oracle = d.oracle_text || "";
-                            item.type = d.type_line || "";
-                        } catch(e) {}
-                    } else {
-                        item.image = row["id"] ? `https://www.pricecharting.com/game-photos?id=${row["id"]}` : "";
-                    }
-                    cardData.push(item);
+        Papa.parse(file, { header: true, skipEmptyLines: true, complete: async (res) => {
+            cardData = res.data.filter(row => row["product-name"] || row["Card Name"]).map(row => ({
+                name: row["product-name"] || row["Card Name"],
+                set: row["console-name"] || row["Set"] || "N/A",
+                price: (parseFloat(row["price-in-pennies"])/100) || parseFloat(row["Price (USD)"]) || 0,
+                qty: parseInt(row["quantity"]) || 1,
+                main: 0, side: 0, image: "", mana: ""
+            }));
+            if(source === 'mtg') {
+                for(let c of cardData) {
+                    try {
+                        const r = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.name)}`);
+                        const d = await r.json();
+                        c.image = d.image_uris?.normal || "";
+                        c.mana = d.mana_cost || "";
+                    } catch(e) {}
                 }
-                applySortAndRender();
             }
-        });
+            render();
+        }});
     }
-
-    function applySortAndRender() {
-        const sort = document.getElementById('sortOrder').value;
-        cardData.sort((a,b) => (sort === 'price_desc') ? b.price - a.price : a.name.localeCompare(b.name));
-        render();
-    }
-
     function render() {
         const out = document.getElementById('main-content');
-        const format = document.getElementById('gameFormat').value;
         out.innerHTML = '';
-        if(cardData.length === 0) return;
-
-        if(currentMode === 'cat') {
+        if(currentMode === 'cover') {
+            out.innerHTML = `<div class="page"><div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; border:15px double var(--gold);"><h1>${document.getElementById('albumTitle').value || 'CLASSEUR'}</h1><h2>${document.getElementById('playerName').value || ''}</h2></div></div>`;
+        } else if(currentMode === 'cat') {
             for (let i = 0; i < cardData.length; i += 10) {
-                let p = document.createElement('div'); p.className = 'page';
-                let grid = document.createElement('div'); grid.className = 'grid-10';
+                let grid = `<div class="grid-10">`;
                 cardData.slice(i, i+10).forEach(c => {
-                    grid.innerHTML += `<div class="card-item">
-                        <div class="card-qty">x${c.qty}</div>
-                        <div class="img-container"><img src="${c.image}"></div>
-                        <div class="card-info">
-                            <div style="font-size:0.55rem; color:#888; display:flex; justify-content:space-between; align-items:center;">
-                                <span>${c.set.toUpperCase()}</span> <span>${formatMana(c.mana)}</span>
-                            </div>
-                            <div style="font-weight:700; font-size:0.95rem; margin:2px 0;">${c.name}</div>
-                            <div class="oracle">${c.oracle || c.type || ''}</div>
-                            <div class="price">${c.price.toFixed(2)}$</div>
-                        </div>
-                    </div>`;
+                    grid += `<div class="card-item"><div class="card-qty">x${c.qty}</div><div class="img-container"><img src="${c.image}"></div><div class="card-info"><div><small>${c.set}</small><span>${formatMana(c.mana)}</span></div><b>${c.name}</b><div class="card-price">${c.price.toFixed(2)}$</div></div></div>`;
                 });
-                p.appendChild(grid); out.appendChild(p);
+                out.innerHTML += `<div class="page">${grid}</div></div>`;
             }
         } else {
-            let html = `<div class="editor-container"><h2>${currentMode === 'edit' ? 'Ajustements Prix & Stock' : 'Decklist Builder'}</h2><table><tr><th>Carte</th><th>Série</th>`;
-            html += (currentMode === 'edit') ? `<th>Prix ($)</th><th>En Stock</th>` : `<th>Main</th>${format==='standard'?'<th>Side</th>':''}`;
-            html += `</tr>`;
+            let html = `<div class="editor-container"><table><tr><th>Carte</th><th>Prix</th><th>Stock</th><th>Main</th><th>Side</th></tr>`;
             cardData.forEach((c, i) => {
-                html += `<tr><td><b>${c.name}</b></td><td><small>${c.set}</small></td>`;
-                if(currentMode === 'edit') {
-                    html += `<td><input type="number" step="0.01" class="edit-input" value="${c.price}" onchange="cardData[${i}].price=parseFloat(this.value)"></td>
-                             <td><input type="number" class="edit-input" value="${c.qty}" onchange="cardData[${i}].qty=parseInt(this.value)"></td>`;
-                } else {
-                    html += `<td><input type="number" class="edit-input" value="${c.main}" onchange="cardData[${i}].main=parseInt(this.value)"></td>
-                             ${format==='standard'?`<td><input type="number" class="edit-input" value="${c.side}" onchange="cardData[${i}].side=parseInt(this.value)"></td>`:''}`;
-                }
-                html += `</tr>`;
+                html += `<tr><td>${c.name}</td>
+                <td><input type="number" step="0.01" value="${c.price}" onchange="cardData[${i}].price=parseFloat(this.value)"></td>
+                <td><input type="number" value="${c.qty}" onchange="cardData[${i}].qty=parseInt(this.value)"></td>
+                <td><input type="number" value="${c.main}" onchange="cardData[${i}].main=parseInt(this.value)"></td>
+                <td><input type="number" value="${c.side}" onchange="cardData[${i}].side=parseInt(this.value)"></td></tr>`;
             });
             out.innerHTML = html + `</table></div>`;
         }
     }
-
     function handleExport() {
         if(currentMode !== 'deck') { window.print(); return; }
         const { jsPDF } = window.jspdf; const doc = new jsPDF();
-        const name = document.getElementById('playerName').value || "JOUEUR";
-        const id = document.getElementById('playerID').value || "N/A";
+        const pName = document.getElementById('playerName').value || "JOUEUR";
+        const pID = document.getElementById('playerID').value || "N/A";
         
-        doc.setFillColor(30, 30, 30); doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255, 255, 255); doc.setFontSize(20); doc.text("OFFICIAL DECK REGISTRATION", 105, 20, {align:"center"});
-        doc.setFontSize(10); doc.text(`PLAYER: ${name.toUpperCase()}`, 20, 30); doc.text(`ID: ${id}`, 150, 30);
+        doc.setFillColor(30,30,30); doc.rect(0,0,210,40,'F');
+        doc.setTextColor(255); doc.setFontSize(18); doc.text("DECK REGISTRATION SHEET", 105, 15, {align:"center"});
+        doc.setFontSize(10); doc.text(`PLAYER: ${pName.toUpperCase()}`, 15, 25); doc.text(`DCI/ID: ${pID}`, 15, 32);
         
-        doc.setTextColor(0, 0, 0); doc.setFontSize(14); doc.text("MAIN DECK", 20, 55);
-        let y = 65;
+        doc.setTextColor(0); doc.setFontSize(14); doc.text("MAIN DECK", 15, 50);
+        let y = 60; let mTotal = 0; let sTotal = 0;
         cardData.filter(c => c.main > 0).forEach(c => {
-            doc.text(`${c.main}  ${c.name.toUpperCase()}`, 20, y);
-            doc.line(20, y+1, 190, y+1);
-            y += 8; if(y > 270) { doc.addPage(); y = 20; }
+            doc.text(`${c.main}  ${c.name}`, 15, y); doc.line(15,y+1,195,y+1);
+            y+=7; mTotal += c.main; if(y>250){doc.addPage(); y=20;}
         });
-        if(cardData.some(c => c.side > 0)) {
-            y += 10; doc.setFontSize(14); doc.text("SIDEBOARD", 20, y); y += 10;
-            cardData.filter(c => c.side > 0).forEach(c => {
-                doc.text(`${c.side}  ${c.name.toUpperCase()}`, 20, y);
-                doc.line(20, y+1, 190, y+1); y += 8;
-            });
-        }
-        doc.save(`Decklist_${name}.pdf`);
+        y+=10; doc.setFontSize(14); doc.text("SIDEBOARD", 15, y); y+=10;
+        cardData.filter(c => c.side > 0).forEach(c => {
+            doc.text(`${c.side}  ${c.name}`, 15, y); doc.line(15,y+1,195,y+1);
+            y+=7; sTotal += c.side;
+        });
+
+        // TABLEAU DES JUGES (JUDGE BOX)
+        const boxY = 250;
+        doc.rect(130, boxY, 65, 35);
+        doc.setFontSize(8); doc.text("FOR OFFICIAL USE ONLY", 135, boxY+5);
+        doc.setFontSize(10); doc.text(`Main Deck: ${mTotal}`, 135, boxY+15);
+        doc.text(`Sideboard: ${sTotal}`, 135, boxY+22);
+        doc.text("Judge Signature: ________", 135, boxY+30);
+        
+        doc.save(`Decklist_${pName}.pdf`);
     }
 </script>
 </body>
