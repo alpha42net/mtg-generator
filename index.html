@@ -2,24 +2,24 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v68 - Full Restoration</title>
+    <title>Magic Master v69 - Version Finale</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --gold: #d4af37; --dark: #111; --green: #27ae60; }
+        :root { --gold: #d4af37; --dark: #111; --green: #27ae60; --btn-hover: #333; }
         body { font-family: 'Helvetica', Arial, sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
+        /* HEADER */
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 9999; }
-        .nav-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
+        .nav-btns { display: flex; gap: 12px; justify-content: center; margin-bottom: 15px; }
         .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; max-width: 1400px; margin: 0 auto; align-items: end; }
         
-        button { padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
-        .btn-mode { background: #444; color: #ccc; }
+        button { padding: 10px 18px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; }
+        .btn-mode { background: #555; color: #eee; }
         .btn-mode.active { background: var(--gold); color: black; }
         input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; width: 100%; cursor: pointer; }
 
-        .page { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 15mm; box-sizing: border-box; position: relative; page-break-after: always; color: #000; }
-
         /* DECKLIST OFFICIELLE */
+        .page { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 15mm; box-sizing: border-box; position: relative; page-break-after: always; color: #000; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         .dl-header { border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
         .dl-section-title { background: #000; color: #fff; display: flex; justify-content: space-between; padding: 4px 10px; font-weight: 900; font-size: 10pt; margin-top: 10px; }
         .dl-row { display: flex; border-bottom: 1px solid #ccc; font-size: 9.5pt; height: 26px; align-items: center; }
@@ -28,20 +28,21 @@
         .official-head { background: #000; color: #fff; text-align: center; font-size: 8pt; font-weight: bold; padding: 4px; }
         .official-stat { display: flex; justify-content: space-between; padding: 8px 15px; border-bottom: 1px dashed #000; font-weight: bold; font-size: 11pt; }
 
-        /* CATALOGUE & COUVERTURE */
+        /* CATALOGUE & MANA */
         .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
         .card-box { border: 1px solid #ddd; border-radius: 12px; display: flex; height: 50mm; position: relative; overflow: hidden; background: #fff; }
-        .mana-cost { font-size: 0.8rem; margin-left: 8px; color: #555; font-weight: bold; }
+        .mana-cost { font-size: 0.85rem; margin-left: 8px; color: #444; font-weight: bold; display: inline-block; }
         .price-tag { color: var(--green); font-size: 1.8rem; font-weight: 900; margin-top: auto; }
+
+        /* COUVERTURE */
         .cover-title { font-size: 32pt; font-weight: 900; text-align: center; margin-bottom: 30px; border-bottom: 5px solid var(--gold); }
-        .top-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+        .top-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
         .top-card-item { border: 1px solid #ccc; padding: 10px; border-radius: 8px; text-align: center; }
 
         /* EDIT MODE */
         .edit-container { max-width: 1000px; margin: 30px auto; background: #fff; padding: 30px; border-radius: 8px; }
         .edit-table { width: 100%; border-collapse: collapse; }
         .edit-table th, .edit-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-        .input-qty { width: 60px; padding: 5px; text-align: center; font-weight: bold; }
 
         @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; width: 100%; } }
     </style>
@@ -50,22 +51,23 @@
 
 <div id="ui-gate">
     <div class="nav-btns">
-        <button id="btn-edit" class="btn-mode active" onclick="switchMode('edit')">✍️ MODIFIER LISTES</button>
+        <button id="btn-edit" class="btn-mode active" onclick="switchMode('edit')">✍️ MODIFIER DECK</button>
         <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">📄 DECKLIST OFFICIELLE</button>
-        <button id="btn-cat" class="btn-mode" onclick="switchMode('cat')">💰 CATALOGUE & COUVERTURE</button>
+        <button id="btn-cat" class="btn-mode" onclick="switchMode('cat')">💰 CATALOGUE</button>
     </div>
     <div class="controls-grid">
         <div><label>Fichier CSV</label><input type="file" id="csvIn" onchange="processData()"></div>
         <div>
-            <label>Tri Catalogue</label>
+            <label>Tri / Prix Source</label>
             <select id="sortType" onchange="applySort()">
-                <option value="price-desc">Prix (Décroissant)</option>
+                <option value="price-desc">Prix (MTG Hockey)</option>
                 <option value="name">Nom (A-Z)</option>
+                <option value="price-asc">Prix Croissant</option>
             </select>
         </div>
-        <div><label>Format</label><input type="text" id="fmtN" value="Standard / Modern" oninput="render()"></div>
-        <div><label>Vendeur/Joueur</label><input type="text" id="playN" value="Vendeur Magic" oninput="render()"></div>
-        <button onclick="window.print()" style="background:var(--green); color:white;">IMPRIMER PDF</button>
+        <div><label>Format</label><input type="text" id="fmtN" value="Modern / Standard" oninput="render()"></div>
+        <div><label>Joueur</label><input type="text" id="playN" value="Vendeur Pro" oninput="render()"></div>
+        <button onclick="window.print()" style="background:var(--green); color:white; width:100%;">IMPRIMER PDF</button>
     </div>
 </div>
 
@@ -115,7 +117,8 @@
     function applySort() {
         const s = document.getElementById('sortType').value;
         if(s === 'name') cardData.sort((a,b) => a.name.localeCompare(b.name));
-        else cardData.sort((a,b) => b.price - a.price);
+        else if(s === 'price-desc') cardData.sort((a,b) => b.price - a.price);
+        else cardData.sort((a,b) => a.price - b.price);
         render();
     }
 
@@ -126,11 +129,11 @@
         const fmt = document.getElementById('fmtN').value;
 
         if(currentMode === 'edit') {
-            let h = `<div class="edit-container"><h2>Ajustement du Deck</h2><table class="edit-table"><tr><th>Carte</th><th>CSV</th><th>Main</th><th>Side</th></tr>`;
+            let h = `<div class="edit-container"><h2>Gestion des Listes</h2><table class="edit-table"><tr><th>Carte</th><th>CSV</th><th>Main</th><th>Side</th></tr>`;
             cardData.forEach((c, i) => {
                 h += `<tr><td><b>${c.name}</b></td><td>${c.qty}</td>
-                <td><input type="number" class="input-qty" value="${c.main}" onchange="cardData[${i}].main=parseInt(this.value)"></td>
-                <td><input type="number" class="input-qty" value="${c.side}" onchange="cardData[${i}].side=parseInt(this.value)"></td></tr>`;
+                <td><input type="number" style="width:50px" value="${c.main}" onchange="cardData[${i}].main=parseInt(this.value)"></td>
+                <td><input type="number" style="width:50px" value="${c.side}" onchange="cardData[${i}].side=parseInt(this.value)"></td></tr>`;
             });
             out.innerHTML = h + `</table></div>`;
         }
@@ -155,23 +158,24 @@
             </div>`;
         }
         else if(currentMode === 'cat') {
-            // COUVERTURE
             const tops = [...cardData].sort((a,b) => b.price - a.price).slice(0, 9);
-            const total = cardData.reduce((s, c) => s + (c.price * c.qty), 0);
-            let cover = `<div class="page"><h1 class="cover-title">LOT DE VENTE MAGIC</h1><h2 style="text-align:center;">Vendeur: ${playN}</h2><div style="text-align:center; font-size:24pt; color:var(--green); margin:30px 0;">Valeur Totale: ${total.toFixed(2)}$</div><h3>CARTES DE VALEUR</h3><div class="top-cards-grid">`;
-            tops.forEach(c => { cover += `<div class="top-card-item"><img src="${c.image}" style="width:100%; border-radius:5px;"><br><b>${c.name}</b><br><span style="color:var(--green); font-weight:bold;">${c.price.toFixed(2)}$</span></div>`; });
+            const totalVal = cardData.reduce((s, c) => s + (c.price * c.qty), 0);
+            
+            // PAGE COUVERTURE
+            let cover = `<div class="page"><h1 class="cover-title">INVENTAIRE & VALEUR</h1><h2 style="text-align:center;">Vendeur: ${playN}</h2><div style="text-align:center; font-size:24pt; color:var(--green); margin:30px 0;">Valeur Totale: ${totalVal.toFixed(2)}$</div><h3>TOP VALUE CARDS</h3><div class="top-cards-grid">`;
+            tops.forEach(c => { cover += `<div class="top-card-item"><img src="${c.image}" style="width:100%; border-radius:8px;"><br><b>${c.name}</b><br><span style="color:var(--green); font-weight:bold;">${c.price.toFixed(2)}$</span></div>`; });
             out.innerHTML += cover + `</div></div>`;
 
-            // CATALOGUE
+            // PAGES CATALOGUE
             for (let i = 0; i < cardData.length; i += 10) {
                 let g = `<div class="grid-cat">`;
                 cardData.slice(i, i+10).forEach(c => {
                     g += `<div class="card-box"><div style="position:absolute; top:5px; right:5px; background:#000; color:#fff; padding:2px 6px; border-radius:4px; font-weight:bold;">x${c.qty}</div>
                         <div style="width:95px; border-right:1px solid #eee; display:flex; align-items:center; justify-content:center; padding:5px;"><img src="${c.image}" style="max-height:100%; max-width:100%;"></div>
                         <div style="flex:1; padding:12px; display:flex; flex-direction:column; min-width:0;">
-                            <div style="font-size:0.6rem; color:#888;">${c.set}</div>
+                            <div style="font-size:0.6rem; color:#888; text-transform:uppercase;">${c.set}</div>
                             <div style="font-weight:900; font-size:1.1rem; display:flex; align-items:center;">${c.name} <span class="mana-cost">${c.mana}</span></div>
-                            <div style="font-size:0.65rem; color:#444; flex-grow:1; overflow:hidden; margin-top:5px;">${c.oracle}</div>
+                            <div style="font-size:0.65rem; color:#444; flex-grow:1; overflow:hidden; margin-top:5px; line-height:1.2;">${c.oracle}</div>
                             <div class="price-tag">${c.price.toFixed(2)}$</div>
                         </div></div>`;
                 });
