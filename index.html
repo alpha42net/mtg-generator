@@ -2,92 +2,150 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v118-FORCE</title>
+    <title>Magic Master v119 - GitHub Sync</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; --blue: #3498db; }
         body { font-family: 'Arial Narrow', sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
+        
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 999; }
         .ctrl-flex { display: flex; flex-wrap: wrap; gap: 15px; max-width: 1600px; margin: 0 auto; align-items: flex-start; }
+        
         .field { display: flex; flex-direction: column; gap: 4px; }
         label { font-size: 10px; color: var(--gold); font-weight: bold; text-transform: uppercase; }
         input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; font-size: 11px; }
-        
-        /* BOUTON REFRESH VISIBLE */
-        .btn-refresh { background: var(--blue); color: white; border: none; padding: 8px; font-weight: bold; cursor: pointer; border-radius: 4px; margin-top: 2px; font-size: 10px; text-transform: uppercase; }
-        
+
+        /* BOUTON REFRESH - FIXÉ SOUS LE CSV */
+        .btn-refresh { 
+            background: var(--blue) !important; 
+            color: white !important; 
+            border: 2px solid #ff9800; /* Bordure orange pour confirmer la version v119 */
+            padding: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            margin-top: 2px; 
+            font-size: 10px; 
+            text-transform: uppercase; 
+        }
+
         .btn-grp { display: flex; gap: 4px; }
-        .btn-opt { flex: 1; padding: 8px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; min-width: 50px; }
+        .btn-opt { flex: 1; padding: 8px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; min-width: 55px; }
         .btn-opt.active { background: var(--gold); color: black; border-color: white; }
 
+        /* GRILLE 16 (4x4) */
         .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 8mm; box-sizing: border-box; page-break-after: always; box-shadow: 0 0 10px rgba(0,0,0,0.2); color: #000; }
         .grid-16 { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 3mm; height: 275mm; }
-        .cat-item { border: 1px solid #ccc; display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
+        
+        .cat-item { border: 1px solid #ccc; display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; padding: 5px; }
         .cat-img { width: 100%; height: 35mm; object-fit: contain; background: #f9f9f9; }
-        .price-tag { color: var(--green); font-size: 1.2rem; font-weight: bold; text-align: right; }
+        .price-tag { color: var(--green); font-size: 1.2rem; font-weight: bold; text-align: right; margin-top: auto; }
+        
+        .qty-badge { position: absolute; top: 2px; right: 2px; background: #000; color: #fff; padding: 1px 4px; border-radius: 3px; font-size: 7pt; }
+
         @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; } }
     </style>
 </head>
 <body>
+
 <div id="ui-gate">
     <div class="ctrl-flex">
         <div class="field">
-            <label>1. Fichier CSV</label>
+            <label>1. Source CSV</label>
             <input type="file" id="csvFile" onchange="loadCSV()">
             <button class="btn-refresh" onclick="loadCSV()">REFRESH DATA 🔄</button>
         </div>
+
         <div class="field">
-            <label>2. Format</label>
+            <label>2. Format (STD FIX)</label>
             <div class="btn-grp">
-                <button class="btn-opt active" id="btn-std" onclick="setFormat('STANDARD')">STD</button>
-                <button class="btn-opt" id="btn-mod" onclick="setFormat('MODERN')">MOD</button>
-                <button class="btn-opt" id="btn-cmd" onclick="setFormat('CMD')">CMD</button>
+                <button class="btn-opt active" id="f-std" onclick="setFmt('STANDARD')">STD</button>
+                <button class="btn-opt" id="f-mod" onclick="setFmt('MODERN')">MOD</button>
+                <button class="btn-opt" id="f-cmd" onclick="setFmt('CMD')">CMD</button>
             </div>
         </div>
+
         <div class="field">
             <label>3. Mode</label>
             <select id="mode" onchange="render()">
-                <option value="cat">💰 CATALOGUE (16)</option>
+                <option value="cat">💰 CATALOGUE (4x4)</option>
                 <option value="deck">📄 DECKLIST</option>
             </select>
         </div>
-        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; border-radius:4px; margin-left:auto;">IMPRIMER</button>
+
+        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; border-radius:4px; margin-left:auto; height: 35px; align-self: center;">IMPRIMER</button>
     </div>
 </div>
+
 <div id="view"></div>
+
 <script>
     let cards = [];
-    let currentFormat = 'STANDARD';
-    function setFormat(fmt) {
-        currentFormat = fmt;
+    let currentFmt = 'STANDARD';
+
+    // FONCTION REPARÉE POUR STD / MOD / CMD
+    function setFmt(f) {
+        currentFmt = f;
         document.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
-        if(fmt === 'STANDARD') document.getElementById('btn-std').classList.add('active');
-        if(fmt === 'MODERN') document.getElementById('btn-mod').classList.add('active');
-        if(fmt === 'CMD') document.getElementById('btn-cmd').classList.add('active');
-        render();
+        if(f === 'STANDARD') document.getElementById('f-std').classList.add('active');
+        if(f === 'MODERN') document.getElementById('f-mod').classList.add('active');
+        if(f === 'CMD') document.getElementById('f-cmd').classList.add('active');
+        render(); // Force la mise à jour immédiate
     }
+
     async function loadCSV() {
         const file = document.getElementById('csvFile').files[0];
         if(!file) return;
+        
         Papa.parse(file, {
             header: true, skipEmptyLines: true,
             complete: async (r) => {
-                cards = r.data.map(row => ({
-                    name: row["product-name"] || row["Card Name"] || "Carte",
-                    price: (parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0),
-                    qty: parseInt(row["quantity"])||1,
-                    set: row["Set"]||""
-                }));
+                cards = [];
+                for (let row of r.data) {
+                    let name = row["product-name"] || row["Card Name"] || "Carte";
+                    let price = (parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0);
+                    let c = { name, price, qty: parseInt(row["quantity"])||1, set: row["Set"]||"", img: "" };
+                    
+                    try {
+                        const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
+                        const d = await res.json();
+                        c.img = d.image_uris?.small || ""; 
+                    } catch(e) {}
+                    
+                    cards.push(c);
+                }
                 render();
             }
         });
     }
+
     function render() {
         const out = document.getElementById('view');
         const mode = document.getElementById('mode').value;
-        out.innerHTML = `<div class="page"><h2>${currentFormat} View</h2><div class="${mode === 'cat' ? 'grid-16' : ''}">` + 
-            cards.map(c => mode === 'cat' ? `<div class="cat-item"><div class="price-tag">${c.price}$</div>${c.name}</div>` : `<div>${c.qty} x ${c.name}</div>`).join('') + 
-            `</div></div>`;
+        out.innerHTML = '';
+
+        if(mode === 'cat') {
+            for (let i = 0; i < cards.length; i += 16) {
+                let grid = `<div class="grid-16">`;
+                cards.slice(i, i + 16).forEach(c => {
+                    grid += `
+                    <div class="cat-item">
+                        <div class="qty-badge">x${c.qty}</div>
+                        ${c.img ? `<img src="${c.img}" class="cat-img">` : `<div style="height:35mm"></div>`}
+                        <div style="font-weight:bold; font-size:8pt; padding-top:2px;">${c.name}</div>
+                        <div class="price-tag">${c.price.toFixed(2)}$</div>
+                    </div>`;
+                });
+                grid += `</div>`;
+                out.innerHTML += `<div class="page"><h3>CATALOGUE ${currentFmt}</h3>${grid}</div>`;
+            }
+        } else {
+            let h = `<div class="page"><h3>DECKLIST ${currentFmt}</h3><hr>`;
+            cards.forEach(c => {
+                h += `<div style="border-bottom:1px solid #eee; padding:5px; font-size:10pt;"><b>${c.qty}</b> ${c.name}</div>`;
+            });
+            out.innerHTML = h + `</div>`;
+        }
     }
 </script>
 </body>
