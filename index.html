@@ -2,56 +2,42 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v116 - Code 16 Format</title>
+    <title>Magic Master v116 - REFRESH TEST</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; --yellow: #ffeb3b; }
-        body { font-family: 'Courier New', Courier, monospace; background: #cfd8dc; margin: 0; padding: 0; }
+        :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; --red: #e74c3c; }
+        body { font-family: 'Arial Narrow', sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
-        /* HEADER SYSTÈME */
-        #ui-gate { background: var(--dark); color: white; padding: 12px; border-bottom: 3px solid #444; position: sticky; top: 0; z-index: 999; }
-        .ctrl-flex { display: flex; flex-wrap: wrap; gap: 10px; max-width: 1600px; margin: 0 auto; }
+        /* BARRE DE CONTRÔLE */
+        #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 999; }
+        .ctrl-flex { display: flex; flex-wrap: wrap; gap: 20px; max-width: 1600px; margin: 0 auto; align-items: flex-start; }
         
-        .field { display: flex; flex-direction: column; gap: 2px; min-width: 180px; }
-        label { font-size: 9px; color: #888; font-weight: bold; text-transform: uppercase; }
-        input, select { background: #000; border: 1px solid #333; color: #0f0; padding: 6px; border-radius: 2px; font-size: 11px; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 10px; color: var(--gold); font-weight: bold; text-transform: uppercase; }
 
-        /* BOUTON REFRESH TYPE CODE 16 */
-        .btn-refresh-code16 { 
-            background: #222 !important; 
-            color: var(--yellow) !important; 
-            border: 1px solid var(--yellow); 
-            padding: 6px; 
+        /* LE BOUTON REFRESH - IMPOSSIBLE À RATER */
+        .btn-refresh-emergency { 
+            background: var(--red) !important; 
+            color: white !important; 
+            border: 2px solid white !important;
+            padding: 10px; 
             font-weight: bold; 
             cursor: pointer; 
-            border-radius: 2px; 
-            font-size: 10px;
-            text-transform: uppercase;
-            margin-top: 4px;
+            border-radius: 4px; 
             text-align: center;
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
         }
-        .btn-refresh-code16:hover { background: var(--yellow) !important; color: #000 !important; }
 
-        .btn-grp { display: flex; gap: 2px; }
-        .btn-opt { flex: 1; padding: 6px; border: 1px solid #333; background: #222; color: #fff; cursor: pointer; font-size: 9px; font-weight: bold; }
-        .btn-opt.active { background: #444; color: var(--yellow); border-color: var(--yellow); }
+        .btn-grp { display: flex; gap: 4px; }
+        .btn-opt { padding: 8px 15px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 11px; font-weight: bold; border-radius: 4px; }
+        .btn-opt.active { background: var(--gold); color: black; }
 
         /* PAGES */
-        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 10mm; box-sizing: border-box; position: relative; page-break-after: always; color: #000; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        .dl-main-title { font-size: 16pt; font-weight: bold; text-align: center; border-bottom: 2px solid #000; margin-bottom: 10px; }
-        .c-row { display: flex; border-bottom: 1px dotted #000; height: 20px; align-items: center; font-size: 9pt; }
-        .qty-box { width: 25px; font-weight: bold; border-right: 1px solid #000; margin-right: 5px; text-align: center; }
+        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 15mm; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        .card-row { border-bottom: 1px solid #eee; padding: 8px; display: flex; align-items: center; }
+        .qty { font-weight: bold; width: 30px; color: var(--gold); }
 
-        /* CATALOGUE MTG DATA */
-        .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 4mm; height: 100%; }
-        .cat-item { border: 1px solid #000; display: flex; height: 48mm; overflow: hidden; }
-        .cat-img { width: 95px; border-right: 1px solid #000; object-fit: contain; }
-        .cat-content { padding: 8px; flex: 1; display: flex; flex-direction: column; }
-        .cat-oracle { font-size: 6.5pt; line-height: 1; margin: 4px 0; overflow: hidden; flex-grow: 1; font-family: sans-serif; }
-        .price-green { color: #000; font-size: 1.5rem; font-weight: bold; border-top: 1px solid #000; text-align: right; }
-        .mana-svg { height: 12px; margin-left: 1px; }
-
-        @media print { #ui-gate { display: none !important; } .page { margin: 0; border: none; } }
+        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; } }
     </style>
 </head>
 <body>
@@ -60,30 +46,13 @@
     <div class="ctrl-flex">
         
         <div class="field">
-            <label>SYS_SOURCE_CSV</label>
+            <label>1. Source CSV</label>
             <input type="file" id="csvFile" onchange="loadCSV()">
-            <button class="btn-refresh-code16" onclick="loadCSV()">EXECUTE REFRESH_LOAD</button>
+            <button class="btn-refresh-emergency" onclick="loadCSV()">CLIQUE ICI POUR REFRESH 🔄</button>
         </div>
 
         <div class="field">
-            <label>ENGINE_TYPE</label>
-            <div class="btn-grp">
-                <button class="btn-opt active" id="m-mtg" onclick="setEng('mtg')">MTG_DATA</button>
-                <button class="btn-opt" id="m-sport" onclick="setEng('sport')">SPORT_DATA</button>
-            </div>
-        </div>
-
-        <div class="field">
-            <label>OUTPUT_MODE</label>
-            <select id="mode" onchange="render()">
-                <option value="edit">MOD_EDIT</option>
-                <option value="deck" selected>MOD_DECKLIST</option>
-                <option value="cat">MOD_CATALOG</option>
-            </select>
-        </div>
-
-        <div class="field">
-            <label>FORMAT_LIMIT</label>
+            <label>2. Format</label>
             <div class="btn-grp">
                 <button class="btn-opt active" id="f-std" onclick="setFmt('STANDARD')">STD</button>
                 <button class="btn-opt" id="f-mod" onclick="setFmt('MODERN')">MOD</button>
@@ -92,11 +61,15 @@
         </div>
 
         <div class="field">
-            <label>USER_ID</label>
-            <input type="text" id="p_name" value="ADMIN_01" oninput="render()">
+            <label>3. Mode</label>
+            <select id="mode" onchange="render()" style="padding:8px;">
+                <option value="deck">📄 DECKLIST</option>
+                <option value="edit">✍️ MODIFIER PRIX</option>
+            </select>
         </div>
 
-        <button onclick="window.print()" style="background:var(--green); color:black; border:none; padding:10px; font-weight:bold; cursor:pointer; height:45px; align-self: flex-end; margin-left:auto;">PRINT_OUT</button>
+        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; border-radius:4px; margin-left:auto;">IMPRIMER</button>
+
     </div>
 </div>
 
@@ -104,47 +77,30 @@
 
 <script>
     let cards = [];
-    let curEng = 'mtg';
+    let currentFmt = 'STANDARD';
 
-    function setEng(e) { 
-        curEng = e; 
-        document.getElementById('m-mtg').classList.toggle('active', e==='mtg');
-        document.getElementById('m-sport').classList.toggle('active', e==='sport');
-        loadCSV(); 
-    }
-
-    function getManaIcons(manaStr) {
-        if (!manaStr || curEng !== 'mtg') return '';
-        return manaStr.match(/\{([^}]+)\}/g)?.map(s => {
-            let sym = s.replace('{','').replace('}','').replace('/','').toUpperCase();
-            return `<img src="https://svgs.scryfall.io/card-symbols/${sym}.svg" class="mana-svg">`;
-        }).join('') || '';
+    // Correction du bug STD / MOD / CMD
+    function setFmt(f) {
+        currentFmt = f;
+        document.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
+        if(f === 'STANDARD') document.getElementById('f-std').classList.add('active');
+        if(f === 'MODERN') document.getElementById('f-mod').classList.add('active');
+        if(f === 'CMD') document.getElementById('f-cmd').classList.add('active');
+        render();
     }
 
     function loadCSV() {
         const file = document.getElementById('csvFile').files[0];
-        if(!file) return;
+        if(!file) { alert("Oublie pas de choisir un fichier !"); return; }
+        
         Papa.parse(file, {
             header: true, skipEmptyLines: true,
-            complete: async (r) => {
-                cards = [];
-                for (let row of r.data) {
-                    let name = row["product-name"] || row["Card Name"] || "NULL_ITEM";
-                    let price = (parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0);
-                    let c = { name, price, main: parseInt(row["quantity"])||1, side: 0, set: row["Set"]||"", img: "", type_line: "", oracle: "", mana: "" };
-                    if(curEng === 'mtg') {
-                        try {
-                            const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
-                            const d = await res.json();
-                            c.img = d.image_uris?.normal || ""; 
-                            c.type_line = d.type_line || ""; 
-                            c.oracle = d.oracle_text || "";
-                            c.mana = d.mana_cost || "";
-                            c.set = d.set_name || c.set;
-                        } catch(e) {}
-                    }
-                    cards.push(c);
-                }
+            complete: (r) => {
+                cards = r.data.map(row => ({
+                    name: row["product-name"] || row["Card Name"] || "Inconnu",
+                    price: parseFloat(row["Price (USD)"]) || 0,
+                    qty: parseInt(row["quantity"]) || 1
+                }));
                 render();
             }
         });
@@ -153,33 +109,22 @@
     function render() {
         const out = document.getElementById('view');
         const mode = document.getElementById('mode').value;
-        const pn = document.getElementById('p_name').value;
         out.innerHTML = '';
 
-        if(mode === 'cat') {
-            for (let i = 0; i < cards.length; i += 10) {
-                let g = `<div class="grid-cat">`;
-                cards.slice(i, i+10).forEach(c => {
-                    g += `<div class="cat-item">
-                        <img src="${c.img}" class="cat-img">
-                        <div class="cat-content">
-                            <div style="font-weight:bold; font-size:9pt; border-bottom:1px solid #000;">${c.name} ${getManaIcons(c.mana)}</div>
-                            <div style="font-size:7pt; color:#666;">${c.type_line}</div>
-                            <div class="cat-oracle">${c.oracle}</div>
-                            <div class="price-green">$${c.price.toFixed(2)}</div>
-                        </div>
-                    </div>`;
-                });
-                out.innerHTML += `<div class="page">${g}</div></div>`;
+        let h = `<div class="page"><h2>LISTE ${currentFmt}</h2><hr>`;
+        
+        cards.forEach((c, i) => {
+            if(mode === 'edit') {
+                h += `<div class="card-row">
+                    <span style="flex:1">${c.name}</span>
+                    <input type="number" value="${c.price}" step="0.01" onchange="cards[${i}].price=this.value" style="width:60px">
+                </div>`;
+            } else {
+                h += `<div class="card-row"><span class="qty">${c.qty}</span> ${c.name} - ${c.price}$</div>`;
             }
-        } else {
-            // Vue decklist par défaut
-            let h = `<div class="page"><div class="dl-main-title">DATA_REPORT: ${pn}</div>`;
-            cards.forEach(c => {
-                h += `<div class="c-row"><div class="qty-box">${c.main}</div> ${c.name} [${c.set}]</div>`;
-            });
-            out.innerHTML = h + `</div>`;
-        }
+        });
+
+        out.innerHTML = h + `</div>`;
     }
 </script>
 </body>
