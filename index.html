@@ -2,47 +2,61 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v69 - Version Finale</title>
+    <title>Magic Master v70 - Fix Layout</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --gold: #d4af37; --dark: #111; --green: #27ae60; --btn-hover: #333; }
+        :root { --gold: #d4af37; --dark: #111; --green: #27ae60; }
         body { font-family: 'Helvetica', Arial, sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
-        /* HEADER */
-        #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 9999; }
-        .nav-btns { display: flex; gap: 12px; justify-content: center; margin-bottom: 15px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; max-width: 1400px; margin: 0 auto; align-items: end; }
+        /* FIX CHEVAUCHEMENT */
+        #ui-gate { 
+            background: var(--dark); 
+            color: white; 
+            padding: 20px; 
+            border-bottom: 5px solid var(--gold); 
+            position: sticky; 
+            top: 0; 
+            z-index: 9999; 
+        }
+        .nav-btns { 
+            display: flex; 
+            flex-wrap: wrap; /* Empêche le chevauchement en passant à la ligne si nécessaire */
+            gap: 15px; 
+            justify-content: center; 
+            margin-bottom: 20px; 
+        }
+        .controls-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 15px; 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            align-items: end; 
+        }
         
-        button { padding: 10px 18px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; }
-        .btn-mode { background: #555; color: #eee; }
-        .btn-mode.active { background: var(--gold); color: black; }
-        input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; width: 100%; cursor: pointer; }
+        button { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; transition: 0.3s; }
+        .btn-mode { background: #444; color: #ccc; }
+        .btn-mode.active { background: var(--gold); color: black; box-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
+        
+        label { font-size: 0.7rem; color: var(--gold); font-weight: bold; display: block; margin-bottom: 5px; text-transform: uppercase; }
+        input, select { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 4px; width: 100%; box-sizing: border-box; }
 
         /* DECKLIST OFFICIELLE */
-        .page { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 15mm; box-sizing: border-box; position: relative; page-break-after: always; color: #000; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .dl-header { border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .dl-section-title { background: #000; color: #fff; display: flex; justify-content: space-between; padding: 4px 10px; font-weight: 900; font-size: 10pt; margin-top: 10px; }
-        .dl-row { display: flex; border-bottom: 1px solid #ccc; font-size: 9.5pt; height: 26px; align-items: center; }
-        .dl-qty-cell { width: 45px; text-align: center; font-weight: bold; border-right: 3px solid #000; margin-right: 12px; height: 100%; display: flex; align-items: center; justify-content: center; }
-        .official-box { position: absolute; bottom: 25mm; left: 35%; width: 95mm; border: 3.5px solid #000; background: #fff; }
-        .official-head { background: #000; color: #fff; text-align: center; font-size: 8pt; font-weight: bold; padding: 4px; }
-        .official-stat { display: flex; justify-content: space-between; padding: 8px 15px; border-bottom: 1px dashed #000; font-weight: bold; font-size: 11pt; }
+        .page { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 15mm; box-sizing: border-box; position: relative; page-break-after: always; color: #000; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+        .dl-header { border-bottom: 4px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .dl-section-title { background: #000; color: #fff; display: flex; justify-content: space-between; padding: 5px 12px; font-weight: 900; font-size: 11pt; margin-top: 15px; }
+        .dl-row { display: flex; border-bottom: 1px solid #ccc; font-size: 10pt; height: 30px; align-items: center; }
+        .dl-qty-cell { width: 50px; text-align: center; font-weight: bold; border-right: 3px solid #000; margin-right: 15px; height: 100%; display: flex; align-items: center; justify-content: center; }
+        
+        .official-box { position: absolute; bottom: 25mm; left: 35%; width: 100mm; border: 4px solid #000; background: #fff; }
+        .official-head { background: #000; color: #fff; text-align: center; font-size: 9pt; font-weight: bold; padding: 5px; }
+        .official-stat { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px dashed #000; font-weight: bold; font-size: 12pt; }
 
-        /* CATALOGUE & MANA */
+        /* CATALOGUE & COUVERTURE */
         .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
         .card-box { border: 1px solid #ddd; border-radius: 12px; display: flex; height: 50mm; position: relative; overflow: hidden; background: #fff; }
-        .mana-cost { font-size: 0.85rem; margin-left: 8px; color: #444; font-weight: bold; display: inline-block; }
-        .price-tag { color: var(--green); font-size: 1.8rem; font-weight: 900; margin-top: auto; }
-
-        /* COUVERTURE */
-        .cover-title { font-size: 32pt; font-weight: 900; text-align: center; margin-bottom: 30px; border-bottom: 5px solid var(--gold); }
-        .top-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
-        .top-card-item { border: 1px solid #ccc; padding: 10px; border-radius: 8px; text-align: center; }
-
-        /* EDIT MODE */
-        .edit-container { max-width: 1000px; margin: 30px auto; background: #fff; padding: 30px; border-radius: 8px; }
-        .edit-table { width: 100%; border-collapse: collapse; }
-        .edit-table th, .edit-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        .mana-cost { font-size: 0.9rem; margin-left: 10px; color: #333; font-weight: bold; }
+        .price-tag { color: var(--green); font-size: 2rem; font-weight: 900; margin-top: auto; }
 
         @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; width: 100%; } }
     </style>
@@ -53,21 +67,20 @@
     <div class="nav-btns">
         <button id="btn-edit" class="btn-mode active" onclick="switchMode('edit')">✍️ MODIFIER DECK</button>
         <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">📄 DECKLIST OFFICIELLE</button>
-        <button id="btn-cat" class="btn-mode" onclick="switchMode('cat')">💰 CATALOGUE</button>
+        <button id="btn-cat" class="btn-mode" onclick="switchMode('cat')">💰 CATALOGUE & VALEUR</button>
     </div>
     <div class="controls-grid">
-        <div><label>Fichier CSV</label><input type="file" id="csvIn" onchange="processData()"></div>
+        <div><label>Source CSV</label><input type="file" id="csvIn" onchange="processData()"></div>
         <div>
-            <label>Tri / Prix Source</label>
+            <label>Calcul Prix</label>
             <select id="sortType" onchange="applySort()">
-                <option value="price-desc">Prix (MTG Hockey)</option>
+                <option value="mtg-hockey">MTG Hockey (Décroissant)</option>
                 <option value="name">Nom (A-Z)</option>
-                <option value="price-asc">Prix Croissant</option>
             </select>
         </div>
         <div><label>Format</label><input type="text" id="fmtN" value="Modern / Standard" oninput="render()"></div>
-        <div><label>Joueur</label><input type="text" id="playN" value="Vendeur Pro" oninput="render()"></div>
-        <button onclick="window.print()" style="background:var(--green); color:white; width:100%;">IMPRIMER PDF</button>
+        <div><label>Vendeur/Joueur</label><input type="text" id="playN" value="Vendeur Magic" oninput="render()"></div>
+        <button onclick="window.print()" style="background:var(--green); color:white; width:100%;">GÉNÉRER LE PDF</button>
     </div>
 </div>
 
@@ -91,10 +104,10 @@
             complete: async (res) => {
                 cardData = [];
                 for (let row of res.data) {
-                    let name = row["product-name"] || row["Card Name"] || "Nom";
+                    let name = row["product-name"] || row["Card Name"] || "Inconnu";
                     let item = {
                         name: name, qty: parseInt(row["quantity"]) || 1, main: parseInt(row["quantity"]) || 1, side: 0,
-                        set: row["Set"] || "N/A", 
+                        set: row["Set"] || "SÉRIE", 
                         price: parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0,
                         type: "SPELLS", image: "", mana: "", oracle: ""
                     };
@@ -117,8 +130,7 @@
     function applySort() {
         const s = document.getElementById('sortType').value;
         if(s === 'name') cardData.sort((a,b) => a.name.localeCompare(b.name));
-        else if(s === 'price-desc') cardData.sort((a,b) => b.price - a.price);
-        else cardData.sort((a,b) => a.price - b.price);
+        else cardData.sort((a,b) => b.price - a.price);
         render();
     }
 
@@ -129,11 +141,13 @@
         const fmt = document.getElementById('fmtN').value;
 
         if(currentMode === 'edit') {
-            let h = `<div class="edit-container"><h2>Gestion des Listes</h2><table class="edit-table"><tr><th>Carte</th><th>CSV</th><th>Main</th><th>Side</th></tr>`;
+            let h = `<div style="max-width:1000px; margin:30px auto; background:white; padding:30px; border-radius:8px;">
+                <h2>Édition des quantités</h2><table style="width:100%; border-collapse:collapse;">
+                <tr style="border-bottom:2px solid #333;"><th>Carte</th><th>Main</th><th>Side</th></tr>`;
             cardData.forEach((c, i) => {
-                h += `<tr><td><b>${c.name}</b></td><td>${c.qty}</td>
-                <td><input type="number" style="width:50px" value="${c.main}" onchange="cardData[${i}].main=parseInt(this.value)"></td>
-                <td><input type="number" style="width:50px" value="${c.side}" onchange="cardData[${i}].side=parseInt(this.value)"></td></tr>`;
+                h += `<tr style="border-bottom:1px solid #eee;"><td><b>${c.name}</b></td>
+                <td><input type="number" style="width:60px; color:black; background:white; border:1px solid #ccc;" value="${c.main}" onchange="cardData[${i}].main=parseInt(this.value)"></td>
+                <td><input type="number" style="width:60px; color:black; background:white; border:1px solid #ccc;" value="${c.side}" onchange="cardData[${i}].side=parseInt(this.value)"></td></tr>`;
             });
             out.innerHTML = h + `</table></div>`;
         }
@@ -150,32 +164,32 @@
             sideCards.forEach(c => ts += c.side);
 
             out.innerHTML = `<div class="page">
-                <div class="dl-header"><div><h1 style="margin:0;">DECKLIST OFFICIELLE</h1><span>Format: ${fmt}</span></div><div style="text-align:right;"><span>JOUEUR: ${playN}</span></div></div>
+                <div class="dl-header"><div><h1 style="margin:0; font-size:24pt;">DECKLIST OFFICIELLE</h1><span>Format: ${fmt}</span></div><div style="text-align:right;"><span>JOUEUR: ${playN}</span></div></div>
                 ${getSec('CREATURES')}${getSec('SPELLS')}${getSec('LANDS')}
                 <div class="dl-section-title"><span>SIDEBOARD</span><span>${ts}</span></div>
-                ${sideCards.length ? sideCards.map(c => `<div class="dl-row"><div class="dl-qty-cell">${c.side}</div><div>${c.name}</div></div>`).join('') : '<div style="padding:10px; color:#999;">Aucune réserve</div>'}
+                ${sideCards.length ? sideCards.map(c => `<div class="dl-row"><div class="dl-qty-cell">${c.side}</div><div>${c.name}</div></div>`).join('') : '<div style="padding:15px; color:#999; font-style:italic;">Aucune réserve</div>'}
                 <div class="official-box"><div class="official-head">OFFICIAL USE ONLY</div><div class="official-stat"><span>Total Main Deck:</span><span>${tm}</span></div><div class="official-stat"><span>Total Sideboard:</span><span>${ts}</span></div><div class="official-stat" style="border:none; padding-top:10px;"><span>Signature Juge:</span><span>________________</span></div></div>
             </div>`;
         }
         else if(currentMode === 'cat') {
             const tops = [...cardData].sort((a,b) => b.price - a.price).slice(0, 9);
-            const totalVal = cardData.reduce((s, c) => s + (c.price * c.qty), 0);
+            const total = cardData.reduce((s, c) => s + (c.price * c.qty), 0);
             
-            // PAGE COUVERTURE
-            let cover = `<div class="page"><h1 class="cover-title">INVENTAIRE & VALEUR</h1><h2 style="text-align:center;">Vendeur: ${playN}</h2><div style="text-align:center; font-size:24pt; color:var(--green); margin:30px 0;">Valeur Totale: ${totalVal.toFixed(2)}$</div><h3>TOP VALUE CARDS</h3><div class="top-cards-grid">`;
-            tops.forEach(c => { cover += `<div class="top-card-item"><img src="${c.image}" style="width:100%; border-radius:8px;"><br><b>${c.name}</b><br><span style="color:var(--green); font-weight:bold;">${c.price.toFixed(2)}$</span></div>`; });
+            let cover = `<div class="page"><h1 style="text-align:center; font-size:35pt; border-bottom:5px solid var(--gold);">${playN}</h1>
+                <div style="text-align:center; font-size:28pt; color:var(--green); margin:40px 0;">VALEUR DU LOT : ${total.toFixed(2)}$</div>
+                <h3>TOP VALEUR (MTG HOCKEY)</h3><div style="display:grid; grid-template-columns:repeat(3,1fr); gap:15px;">`;
+            tops.forEach(c => { cover += `<div style="text-align:center; border:1px solid #ccc; padding:10px; border-radius:10px;"><img src="${c.image}" style="width:100%; border-radius:8px;"><br><b>${c.name}</b><br><b style="color:var(--green);">${c.price.toFixed(2)}$</b></div>`; });
             out.innerHTML += cover + `</div></div>`;
 
-            // PAGES CATALOGUE
             for (let i = 0; i < cardData.length; i += 10) {
                 let g = `<div class="grid-cat">`;
                 cardData.slice(i, i+10).forEach(c => {
-                    g += `<div class="card-box"><div style="position:absolute; top:5px; right:5px; background:#000; color:#fff; padding:2px 6px; border-radius:4px; font-weight:bold;">x${c.qty}</div>
-                        <div style="width:95px; border-right:1px solid #eee; display:flex; align-items:center; justify-content:center; padding:5px;"><img src="${c.image}" style="max-height:100%; max-width:100%;"></div>
-                        <div style="flex:1; padding:12px; display:flex; flex-direction:column; min-width:0;">
-                            <div style="font-size:0.6rem; color:#888; text-transform:uppercase;">${c.set}</div>
-                            <div style="font-weight:900; font-size:1.1rem; display:flex; align-items:center;">${c.name} <span class="mana-cost">${c.mana}</span></div>
-                            <div style="font-size:0.65rem; color:#444; flex-grow:1; overflow:hidden; margin-top:5px; line-height:1.2;">${c.oracle}</div>
+                    g += `<div class="card-box"><div style="position:absolute; top:8px; right:8px; background:#000; color:#fff; padding:3px 8px; border-radius:5px; font-weight:bold;">x${c.qty}</div>
+                        <div style="width:100px; border-right:1px solid #eee; display:flex; align-items:center; justify-content:center; padding:5px;"><img src="${c.image}" style="max-height:100%; max-width:100%;"></div>
+                        <div style="flex:1; padding:15px; display:flex; flex-direction:column; min-width:0;">
+                            <div style="font-size:0.65rem; color:#888;">${c.set}</div>
+                            <div style="font-weight:900; font-size:1.15rem;">${c.name} <span class="mana-cost">${c.mana}</span></div>
+                            <div style="font-size:0.7rem; color:#444; flex-grow:1; overflow:hidden; margin-top:5px;">${c.oracle}</div>
                             <div class="price-tag">${c.price.toFixed(2)}$</div>
                         </div></div>`;
                 });
