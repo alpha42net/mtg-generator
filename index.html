@@ -2,13 +2,12 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v105-REPAIRED</title>
+    <title>Magic Master v105-FIXED</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; --blue: #3498db; }
         body { font-family: 'Arial Narrow', sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
-        /* HEADER SYSTÈME */
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 999; }
         .ctrl-flex { display: flex; flex-wrap: wrap; gap: 15px; max-width: 1600px; margin: 0 auto; align-items: flex-end; }
         
@@ -16,7 +15,7 @@
         label { font-size: 10px; color: var(--gold); font-weight: bold; text-transform: uppercase; }
         input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; font-size: 11px; }
 
-        /* TOUCHE REFRESH (AJOUTÉE) */
+        /* TOUCHE REFRESH */
         .btn-refresh { 
             background: var(--blue); 
             color: white; 
@@ -26,17 +25,14 @@
             cursor: pointer; 
             border-radius: 4px; 
             font-size: 10px; 
-            margin-top: 2px;
             text-transform: uppercase;
         }
 
-        /* BOUTONS FORMAT */
         .btn-grp { display: flex; gap: 4px; }
         .btn-opt { padding: 8px 15px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 11px; font-weight: bold; border-radius: 4px; }
         .btn-opt.active { background: var(--gold); color: black; border-color: white; }
 
-        /* RENDU PAGE */
-        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 10mm; box-sizing: border-box; page-break-after: always; box-shadow: 0 0 10px rgba(0,0,0,0.2); color: #000; }
+        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 10mm; box-sizing: border-box; page-break-after: always; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
         .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .item-box { border: 1px solid #eee; padding: 10px; display: flex; align-items: center; justify-content: space-between; position: relative; min-height: 60px; }
         .price-text { color: var(--green); font-size: 24pt; font-weight: 900; }
@@ -71,7 +67,7 @@
             </select>
         </div>
 
-        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; border-radius:4px; margin-left:auto;">IMPRIMER PDF</button>
+        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; border-radius:4px; margin-left:auto;">IMPRIMER</button>
     </div>
 </div>
 
@@ -81,7 +77,7 @@
     let rawCards = [];
     let currentFmt = 'STANDARD';
 
-    // FIX DU BOUTON FORMAT : On change la variable ET on relance le dessin
+    // RÉPARATION : On change la variable ET on redessine
     function setFormat(mode) {
         currentFmt = mode;
         document.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
@@ -93,13 +89,12 @@
     function loadData() {
         const file = document.getElementById('csvFile').files[0];
         if(!file) return;
-        
         Papa.parse(file, {
             header: true, skipEmptyLines: true,
             complete: (results) => {
                 rawCards = results.data.map(row => ({
                     name: row["product-name"] || row["Card Name"] || "Nom inconnu",
-                    price: parseFloat(row["Price (USD)"]) || 0,
+                    price: parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0,
                     qty: row["quantity"] || 1
                 }));
                 renderUI();
@@ -110,35 +105,25 @@
     function renderUI() {
         const out = document.getElementById('main-view');
         const mode = document.getElementById('ui-mode').value;
-        
         if(rawCards.length === 0) {
-            out.innerHTML = '<div class="page"><h2 style="text-align:center; padding-top:50px; color:#999;">Aucune donnée chargée.</h2></div>';
+            out.innerHTML = '<div class="page"><h2 style="text-align:center; padding-top:50px; color:#999;">Chargez votre fichier CSV.</h2></div>';
             return;
         }
 
-        let html = `<div class="page">
-            <h2 style="border-bottom: 2px solid #000;">${currentFmt} - INVENTAIRE</h2>`;
-        
+        let html = `<div class="page"><h2>LISTE ${currentFmt}</h2>`;
         if(mode === 'grid') {
             html += `<div class="grid-2col">`;
             rawCards.forEach(c => {
-                html += `
-                <div class="item-box">
-                    <div><b>${c.name}</b></div>
-                    <div class="price-text">${c.price.toFixed(2)}$</div>
-                    <div class="qty-badge">x${c.qty}</div>
-                </div>`;
+                html += `<div class="item-box"><div><b>${c.name}</b></div><div class="price-text">${c.price.toFixed(2)}$</div><div class="qty-badge">x${c.qty}</div></div>`;
             });
             html += `</div>`;
         } else {
             rawCards.forEach(c => {
-                html += `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${c.qty}</b> x ${c.name} - ${c.price}$</div>`;
+                html += `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${c.qty}</b> x ${c.name} - ${c.price.toFixed(2)}$</div>`;
             });
         }
-
         out.innerHTML = html + `</div>`;
     }
-
     renderUI();
 </script>
 </body>
