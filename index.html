@@ -2,58 +2,72 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v106 - Correction Finale</title>
+    <title>Magic Master v106 - Final Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --mtg-gold: #c5a059; }
-        body { font-family: Arial, sans-serif; background: #cfd8dc; margin: 0; padding: 0; color: #000; }
+        :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; }
+        body { font-family: Arial, sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
-        /* UI CONTROLS */
-        #ui-gate { background: #111; color: white; padding: 15px; border-bottom: 5px solid var(--mtg-gold); position: sticky; top: 0; z-index: 999; }
-        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; } }
+        #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 999; }
+        .ctrl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; max-width: 1400px; margin: 0 auto; }
+        
+        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; position: relative; color: #000; page-break-after: always; box-sizing: border-box; }
 
-        /* PAGES DE BASE */
-        .page { width: 210mm; height: 297mm; background: white; margin: 10px auto; position: relative; box-sizing: border-box; page-break-after: always; overflow: hidden; }
-
-        /* --- CORRECTION COUVERTURE --- */
-        .cover-container { padding: 40px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
-        .gold-border { border: 12px double var(--mtg-gold); width: 85%; padding: 60px 20px; margin-top: 50px; text-align: center; }
+        /* --- COUVERTURE CORRIGÉE --- */
+        .cover-wrap { height: 100%; display: flex; align-items: center; justify-content: center; padding: 20mm; box-sizing: border-box; }
+        .cover-border { border: 12px double var(--gold); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 50px; position: relative; }
         .cover-title { font-size: 52pt; font-weight: bold; margin: 0; letter-spacing: 2px; }
-        .cover-officiel { color: var(--mtg-gold); font-size: 18pt; font-weight: bold; margin: 30px 0; letter-spacing: 5px; text-transform: uppercase; }
-        .cover-line { border: none; border-top: 2px solid #000; width: 120px; margin: 20px auto; }
-        .cover-player { color: var(--mtg-gold); font-size: 24pt; font-weight: bold; margin: 20px 0; }
-        .cover-format { font-size: 10pt; margin-top: 30px; text-transform: uppercase; }
+        .cover-subtitle { color: var(--gold); font-size: 18pt; font-weight: bold; margin: 30px 0; letter-spacing: 8px; }
+        .cover-line { border-top: 2px solid #000; width: 150px; margin-bottom: 30px; }
+        .cover-player { color: var(--gold); font-size: 32pt; font-weight: bold; }
+        .cover-format { position: absolute; bottom: 80px; font-size: 10pt; font-weight: bold; text-transform: uppercase; }
 
-        /* --- CORRECTION DECKLIST (IMAGE 3) --- */
-        .dl-layout { padding: 15mm 15mm 15mm 25mm; height: 100%; display: flex; flex-direction: column; }
-        .dl-sidebar { position: absolute; left: 10mm; top: 120mm; transform: rotate(-90deg); transform-origin: left top; width: 400px; font-weight: bold; font-size: 16pt; text-transform: uppercase; white-space: nowrap; }
+        /* --- DECKLIST CORRIGÉE (IMAGE 3) --- */
+        .dl-container { padding: 15mm 15mm 15mm 25mm; position: relative; height: 100%; box-sizing: border-box; }
+        .vert-name { position: absolute; left: 5mm; top: 120mm; transform: rotate(-90deg); transform-origin: left top; font-size: 18pt; font-weight: bold; width: 400px; text-transform: uppercase; white-space: nowrap; }
         
-        .dl-header-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .dl-header-table td { border: 1.5px solid #000; padding: 8px; font-size: 9pt; vertical-align: top; }
-        .dl-main-title { font-size: 18pt; font-weight: bold; text-align: center; border: 1.5px solid #000; padding: 15px; margin-bottom: -1.5px; }
+        .dl-table { width: 100%; border: 2px solid #000; border-collapse: collapse; margin-bottom: 20px; }
+        .dl-table td { border: 1.5px solid #000; padding: 6px; font-size: 9pt; height: 35px; vertical-align: top; }
+        .dl-header-title { font-size: 18pt; font-weight: bold; vertical-align: middle !important; text-align: center; }
 
-        .dl-content { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; margin-top: 20px; flex-grow: 1; }
-        .sect-title { font-weight: bold; font-size: 10pt; border-bottom: 1.5px solid #000; margin-bottom: 10px; padding-bottom: 3px; }
-        .dl-row { display: flex; border-bottom: 1px solid #ddd; padding: 5px 0; font-size: 9pt; align-items: center; }
-        .dl-qty { width: 30px; text-align: center; border-right: 1.5px solid #000; margin-right: 10px; font-weight: bold; }
+        .dl-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; }
+        .sect-bar { background: #000; color: #fff; padding: 4px 10px; font-weight: bold; font-size: 10pt; display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .dl-row { display: flex; border-bottom: 1.5px solid #000; height: 28px; align-items: center; font-size: 9pt; }
+        .dl-qty { width: 35px; border-right: 2px solid #000; text-align: center; font-weight: bold; margin-right: 10px; height: 100%; display: flex; align-items: center; justify-content: center; }
 
-        .dl-footer-flex { display: flex; justify-content: flex-end; align-items: flex-end; margin-top: 20px; }
-        .dl-total-box { display: flex; border: 2px solid #000; }
-        .dl-total-label { background: #eee; padding: 10px; font-weight: bold; font-size: 9pt; border-right: 2px solid #000; }
-        .dl-total-val { padding: 10px 25px; font-weight: bold; font-size: 14pt; }
-        
-        .official-use { width: 300px; border: 1px solid #000; height: 80px; display: grid; grid-template-columns: 1fr 1fr; margin-left: 40px; }
-        .official-cell { padding: 5px; font-size: 7pt; font-weight: bold; border-right: 1px solid #000; }
+        .dl-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-bottom: 10mm; }
+        .dl-total-box { display: flex; border: 2.5px solid #000; }
+        .dl-total-lbl { background: #f0f0f0; padding: 10px 15px; font-weight: bold; border-right: 2.5px solid #000; font-size: 10pt; }
+        .dl-total-val { padding: 10px 25px; font-weight: bold; font-size: 16pt; }
+        .judge-box { border: 1.5px solid #000; width: 350px; height: 80px; display: grid; grid-template-columns: 1fr 1fr; font-size: 7pt; font-weight: bold; }
+        .judge-cell { padding: 5px; border-right: 1.5px solid #000; }
+
+        /* CATALOGUE */
+        .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
+        .cat-item { border: 1px solid #ddd; display: flex; height: 49mm; position: relative; }
+        .cat-img { width: 105px; object-fit: contain; background: #fafafa; border-right: 1px solid #eee; }
+        .price-green { color: var(--green); font-size: 2rem; font-weight: 900; margin-top: auto; }
+        .mana-svg { height: 14px; margin-left: 3px; vertical-align: middle; }
+
+        @media print { #ui-gate { display: none !important; } .page { margin: 0; } }
     </style>
 </head>
 <body>
 
 <div id="ui-gate">
-    <div style="display:flex; gap:20px; align-items:center;">
-        <input type="file" id="csvFile" onchange="loadCSV()">
-        <select id="fmtSelect" onchange="render()"><option value="STANDARD">STANDARD</option><option value="CMD">CMD</option></select>
-        <input type="text" id="p_name" value="BELEREN, Jace" placeholder="Nom du Joueur" oninput="render()">
-        <button onclick="window.print()">GÉNÉRER PDF</button>
+    <div class="ctrl-grid">
+        <div class="field"><label>CSV</label><input type="file" id="csvFile" onchange="loadCSV()"></div>
+        <div class="field">
+            <label>Mode</label>
+            <select id="mode" onchange="render()">
+                <option value="cat">💰 CATALOGUE & COUVERTURE</option>
+                <option value="deck">📄 DECKLIST OFFICIELLE</option>
+            </select>
+        </div>
+        <div class="field"><label>Format</label><select id="fmt" onchange="render()"><option>STANDARD</option><option>CMD</option></select></div>
+        <div class="field"><label>Joueur</label><input type="text" id="p_name" value="BELEREN, Jace" oninput="render()"></div>
+        <div class="field"><label>Événement</label><input type="text" id="p_event" value="TOURNOI LOCAL" oninput="render()"></div>
+        <button onclick="window.print()" style="background:var(--green); border:none; color:white; font-weight:bold; cursor:pointer; border-radius:4px; height:35px; margin-top:14px;">IMPRIMER</button>
     </div>
 </div>
 
@@ -62,89 +76,107 @@
 <script>
     let cards = [];
 
-    function loadCSV() {
+    async function loadCSV() {
         const file = document.getElementById('csvFile').files[0];
+        if(!file) return;
         Papa.parse(file, {
             header: true, skipEmptyLines: true,
-            complete: (r) => {
-                cards = r.data.map(row => ({
-                    name: row["product-name"] || row["Card Name"] || "Carte",
-                    qty: parseInt(row["quantity"]) || 1,
-                    type: (row["product-name"] || "").toLowerCase().includes("plains") || (row["product-name"] || "").toLowerCase().includes("island") ? "Land" : "Spell"
-                }));
+            complete: async (r) => {
+                cards = [];
+                for (let row of r.data) {
+                    let name = row["product-name"] || row["Card Name"] || "Unknown";
+                    let c = { name, qty: parseInt(row["quantity"])||1, price: parseFloat(row["Price (USD)"])||0, img: "", type: "Spell", mana: "", oracle: "" };
+                    try {
+                        const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
+                        const d = await res.json();
+                        c.img = d.image_uris?.normal; c.mana = d.mana_cost; c.oracle = d.oracle_text;
+                        if(d.type_line?.includes("Land")) c.type = "Land";
+                    } catch(e){}
+                    cards.push(c);
+                }
                 render();
             }
         });
     }
 
+    function getManaIcons(manaStr) {
+        if (!manaStr) return '';
+        return manaStr.match(/\{([^}]+)\}/g)?.map(s => {
+            let sym = s.replace('{','').replace('}','').replace('/','').toUpperCase();
+            return `<img src="https://svgs.scryfall.io/card-symbols/${sym}.svg" class="mana-svg">`;
+        }).join('') || '';
+    }
+
     function render() {
         const out = document.getElementById('view');
+        const mode = document.getElementById('mode').value;
         const pn = document.getElementById('p_name').value;
-        const fmt = document.getElementById('fmtSelect').value;
+        const pe = document.getElementById('p_event').value;
+        const curFmt = document.getElementById('fmt').value;
         out.innerHTML = '';
 
-        // --- PAGE 1: COUVERTURE CORRIGÉE ---
-        out.innerHTML += `
-            <div class="page">
-                <div class="cover-container">
-                    <div class="gold-border">
-                        <h1 class="cover-title">CATALOGUE</h1>
-                        <div class="cover-officiel">OFFICIEL</div>
-                        <div class="cover-line"></div>
-                        <div class="cover-player">${pn}</div>
-                        <div class="cover-format">FORMAT: ${fmt}</div>
-                    </div>
-                </div>
-            </div>`;
+        if(mode === 'cat') {
+            // --- COUVERTURE ---
+            out.innerHTML += `<div class="page"><div class="cover-wrap"><div class="cover-border">
+                <h1 class="cover-title">CATALOGUE</h1>
+                <div class="cover-subtitle">OFFICIEL</div>
+                <div class="cover-line"></div>
+                <div class="cover-player">${pn}</div>
+                <div class="cover-format">FORMAT: ${curFmt}</div>
+            </div></div></div>`;
 
-        // --- PAGE 2: DECKLIST CORRIGÉE (IMAGE 3) ---
-        const spells = cards.filter(c => c.type === "Spell");
-        const lands = cards.filter(c => c.type === "Land");
-        const total = cards.reduce((sum, c) => sum + c.qty, 0);
+            // --- PAGES CATALOGUE ---
+            for (let i = 0; i < cards.length; i += 10) {
+                let grid = `<div class="grid-cat">`;
+                cards.slice(i, i+10).forEach(c => {
+                    grid += `<div class="cat-item"><img src="${c.img}" class="cat-img">
+                        <div style="padding:10px; flex:1; display:flex; flex-direction:column;">
+                            <div style="font-weight:bold; font-size:11pt;">${c.name} ${getManaIcons(c.mana)}</div>
+                            <div style="font-size:7pt; color:#666; margin-top:5px; flex:1;">${c.oracle||''}</div>
+                            <div class="price-green">${c.price.toFixed(2)}$</div>
+                        </div><div style="background:#000; color:#fff; padding:4px 8px; font-weight:bold; position:absolute; bottom:0; right:0;">x${c.qty}</div></div>`;
+                });
+                out.innerHTML += `<div class="page" style="padding:10mm;">${grid}</div></div>`;
+            }
+        } else {
+            // --- DECKLIST (STYLE IMAGE 3) ---
+            const spells = cards.filter(c => c.type !== 'Land');
+            const lands = cards.filter(c => c.type === 'Land');
+            const total = cards.reduce((acc, c) => acc + c.qty, 0);
 
-        out.innerHTML += `
-            <div class="page">
-                <div class="dl-sidebar">NAME: ${pn}</div>
-                <div class="dl-layout">
-                    <div class="dl-main-title">MAGIC: THE GATHERING DECKLIST</div>
-                    <table class="dl-header-table">
-                        <tr>
-                            <td style="width:30%">DATE:<br><b>${new Date().toLocaleDateString()}</b></td>
-                            <td colspan="2">LOCATION:<br><b>LONGUEUIL, QC</b></td>
-                        </tr>
-                        <tr>
-                            <td>EVENT:<br><b>TOURNAMENT</b></td>
-                            <td>DECK NAME:</td>
-                            <td style="width:20%">FORMAT:<br><b>${fmt}</b></td>
-                        </tr>
+            out.innerHTML = `<div class="page">
+                <div class="vert-name">NAME: ${pn}</div>
+                <div class="dl-container">
+                    <table class="dl-table">
+                        <tr><td style="width:120px;">MAGIC: THE GATHERING</td><td colspan="2" class="dl-header-title">DECKLIST OFFICIELLE</td></tr>
+                        <tr><td>DATE:</td><td style="width:300px;">${new Date().toLocaleDateString()}</td><td>EVENT:</td></tr>
+                        <tr><td colspan="2">${pe}</td><td rowspan="2" style="font-size:14pt; font-weight:bold;">FORMAT:<br>${curFmt}</td></tr>
+                        <tr><td>LOCATION:</td><td>LONGUEUIL, QC</td></tr>
                     </table>
-
-                    <div class="dl-content">
+                    <div class="dl-grid">
                         <div>
-                            <div class="sect-title">Main Deck (Spells):</div>
-                            ${spells.map(c => `<div class="dl-row"><div class="dl-qty">${c.qty}</div>${c.name}</div>`).join('')}
+                            <div class="sect-bar"><span>MAIN DECK (SPELLS)</span><span>${spells.reduce((a,b)=>a+b.qty,0)}</span></div>
+                            ${spells.map(c=>`<div class="dl-row"><div class="dl-qty">${c.qty}</div>${c.name}</div>`).join('')}
                         </div>
                         <div>
-                            <div class="sect-title">Lands:</div>
-                            ${lands.map(c => `<div class="dl-row"><div class="dl-qty">${c.qty}</div>${c.name}</div>`).join('')}
-                            
-                            <div class="sect-title" style="margin-top:30px;">Sideboard:</div>
-                            <div style="height:100px; border-bottom:1px solid #ddd;"></div>
+                            <div class="sect-bar"><span>LANDS</span></div>
+                            ${lands.map(c=>`<div class="dl-row"><div class="dl-qty">${c.qty}</div>${c.name}</div>`).join('')}
+                            <div class="sect-bar" style="margin-top:30px;"><span>SIDEBOARD</span><span>0</span></div>
                         </div>
                     </div>
-
-                    <div class="dl-footer-flex">
-                        <div class="official-use">
-                            <div class="official-cell">FOR OFFICIAL USE ONLY<br><br>Deck Check / Status:</div>
-                            <div class="official-cell" style="border:none">Judge Signature:</div>
+                    <div class="dl-footer">
+                        <div class="judge-box">
+                            <div class="judge-cell">FOR OFFICIAL USE ONLY<br><br>Deck Check / Status:</div>
+                            <div class="judge-cell" style="border:none;">Judge Signature:</div>
                         </div>
                         <div class="dl-total-box">
-                            <div class="dl-total-label">TOTAL MAIN DECK:</div>
+                            <div class="dl-total-lbl">TOTAL MAIN DECK:</div>
                             <div class="dl-total-val">${total}</div>
                         </div>
                     </div>
                 </div>
             </div>`;
+        }
     }
 </script>
 </body>
