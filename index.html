@@ -2,63 +2,71 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v74 - Full Controls</title>
+    <title>Magic & Hockey Master v83</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --gold: #d4af37; --dark: #111; --green: #27ae60; }
         body { font-family: 'Helvetica', Arial, sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
-        /* NAVIGATION */
+        /* BARRE DE CONTRÔLE */
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 9999; }
-        .nav-tabs { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 15px; }
+        .nav-tabs { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
         .tab-btn { padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; background: #444; color: #ccc; }
         .tab-btn.active { background: var(--gold); color: black; }
 
-        /* BARRE DE CONFIGURATION COMPLÈTE */
-        .config-bar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: flex-end; padding: 10px; background: #1a1a1a; border-radius: 8px; }
+        .config-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: flex-end; max-width: 1400px; margin: 0 auto; }
         .field { display: flex; flex-direction: column; }
-        label { font-size: 10px; color: var(--gold); font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
-        input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; font-size: 13px; min-width: 150px; }
+        label { font-size: 10px; color: var(--gold); font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+        input, select { background: #222; border: 1px solid #555; color: white; padding: 8px; border-radius: 4px; font-size: 13px; }
 
         /* DECKLIST OFFICIELLE */
         .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 15mm; box-sizing: border-box; position: relative; color: #000; box-shadow: 0 0 10px rgba(0,0,0,0.1); page-break-after: always; }
-        .dl-header { border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .section-bar { background: #000; color: #fff; display: flex; justify-content: space-between; padding: 5px 12px; font-weight: 900; font-size: 11pt; margin-top: 12px; }
-        .card-row { display: flex; border-bottom: 1px solid #eee; font-size: 10.5pt; height: 30px; align-items: center; }
-        .qty-box { width: 45px; text-align: center; font-weight: bold; border-right: 3px solid #000; margin-right: 12px; height: 100%; display: flex; align-items: center; justify-content: center; }
-        .signature-area { position: absolute; bottom: 20mm; left: 35%; width: 100mm; border: 3px solid #000; }
-        .sig-header { background: #000; color: #fff; text-align: center; font-weight: bold; font-size: 9pt; padding: 5px; }
-        .sig-line { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px dashed #000; font-weight: bold; }
+        .dl-header { border-bottom: 4px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .section-bar { background: #000; color: #fff; display: flex; justify-content: space-between; padding: 6px 15px; font-weight: 900; font-size: 12pt; margin-top: 15px; text-transform: uppercase; }
+        .card-row { display: flex; border-bottom: 1px solid #ddd; font-size: 11pt; height: 32px; align-items: center; }
+        .qty-box { width: 45px; text-align: center; font-weight: 900; border-right: 3px solid #000; margin-right: 15px; height: 100%; display: flex; align-items: center; justify-content: center; }
+        
+        .sig-box { position: absolute; bottom: 20mm; left: 35%; width: 100mm; border: 3px solid #000; }
+        .sig-h { background: #000; color: #fff; text-align: center; font-weight: bold; font-size: 9pt; padding: 5px; }
+        .sig-r { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px dashed #000; font-weight: bold; }
 
-        /* CATALOGUE & MANA */
+        /* CATALOGUE */
         .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
-        .card-item { border: 1px solid #ddd; border-radius: 12px; display: flex; height: 48mm; overflow: hidden; position: relative; background: #fff; }
-        .mana-sym { font-weight: bold; color: #333; margin-left: 10px; }
-        .price-text { color: var(--green); font-size: 1.8rem; font-weight: 900; margin-top: auto; }
+        .card-item { border: 1px solid #eee; border-radius: 10px; display: flex; height: 48mm; overflow: hidden; position: relative; background: #fff; }
+        .mana-tag { font-weight: bold; color: #444; margin-left: 10px; font-size: 0.9em; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+        .price-tag { color: var(--green); font-size: 1.8rem; font-weight: 900; margin-top: auto; }
 
-        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; width: 100%; } }
+        @media print { #ui-gate { display: none !important; } .page { margin: 0; width: 100%; } }
     </style>
 </head>
 <body>
 
 <div id="ui-gate">
     <div class="nav-tabs">
-        <button class="tab-btn active" onclick="setMode('edit')">✍️ Modifier</button>
-        <button class="tab-btn" onclick="setMode('deck')">📄 Decklist Officielle</button>
-        <button class="tab-btn" onclick="setMode('cat')">💰 Catalogue</button>
+        <button id="btn-edit" class="tab-btn active" onclick="setMode('edit')">✍️ Modifier</button>
+        <button id="btn-deck" class="tab-btn" onclick="setMode('deck')">📄 DECKLIST</button>
+        <button id="btn-cat" class="tab-btn" onclick="setMode('cat')">💰 CATALOGUE</button>
     </div>
-    <div class="config-bar">
-        <div class="field"><label>Fichier CSV</label><input type="file" id="csvFile" onchange="loadCSV()"></div>
+    
+    <div class="config-grid">
         <div class="field">
-            <label>Tri / Prix Recherche</label>
-            <select id="sort" onchange="render()">
-                <option value="mtg">Prix (MTG Hockey)</option>
-                <option value="name">Nom (A-Z)</option>
+            <label>Type de Cartes</label>
+            <select id="listType" onchange="render()">
+                <option value="magic">Magic (Avec Mana)</option>
+                <option value="hockey">Hockey (Liste Simple)</option>
             </select>
         </div>
-        <div class="field"><label>Format Tournoi</label><input type="text" id="fmt" value="Modern / Standard" oninput="render()"></div>
-        <div class="field"><label>Vendeur / Joueur</label><input type="text" id="plyr" value="Vendeur Pro" oninput="render()"></div>
-        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">IMPRIMER PDF</button>
+        <div class="field"><label>CSV</label><input type="file" id="csvFile" onchange="loadCSV()"></div>
+        <div class="field">
+            <label>Tri / Recherche</label>
+            <select id="sort" onchange="render()">
+                <option value="mtg">Prix Décroissant</option>
+                <option value="name">Nom A-Z</option>
+            </select>
+        </div>
+        <div class="field"><label>Format</label><input type="text" id="fmt" value="Modern" oninput="render()"></div>
+        <div class="field"><label>Vendeur/Joueur</label><input type="text" id="plyr" value="Vendeur Pro" oninput="render()"></div>
+        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">PDF</button>
     </div>
 </div>
 
@@ -70,7 +78,7 @@
 
     function setMode(m) {
         currentMode = m;
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(m)));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.id === 'btn-'+m));
         render();
     }
 
@@ -84,16 +92,19 @@
                     let name = row["product-name"] || row["Card Name"] || "Nom";
                     let c = { name, qty: parseInt(row["quantity"])||1, main: parseInt(row["quantity"])||1, side: 0, 
                              price: parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0,
-                             set: row["Set"] || "N/A", img: "", mana: "", type: "SPELLS", oracle: "" };
-                    try {
-                        const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
-                        const d = await res.json();
-                        c.img = d.image_uris?.normal || "";
-                        c.mana = d.mana_cost || "";
-                        c.oracle = d.oracle_text || "";
-                        if(d.type_line.includes("Land")) c.type = "LANDS";
-                        else if(d.type_line.includes("Creature")) c.type = "CREATURES";
-                    } catch(e) {}
+                             set: row["Set"] || "Série", img: "", mana: "", type: "SPELLS", oracle: "" };
+                    
+                    if(document.getElementById('listType').value === 'magic') {
+                        try {
+                            const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
+                            const d = await res.json();
+                            c.img = d.image_uris?.normal || "";
+                            c.mana = d.mana_cost || "";
+                            c.oracle = d.oracle_text || "";
+                            if(d.type_line.includes("Land")) c.type = "LANDS";
+                            else if(d.type_line.includes("Creature")) c.type = "CREATURES";
+                        } catch(e) {}
+                    }
                     cards.push(c);
                 }
                 render();
@@ -103,38 +114,38 @@
 
     function render() {
         const out = document.getElementById('view');
+        const isMagic = document.getElementById('listType').value === 'magic';
         out.innerHTML = '';
-        const sortVal = document.getElementById('sort').value;
-        const playerVal = document.getElementById('plyr').value;
-        const formatVal = document.getElementById('fmt').value;
         
-        cards.sort((a,b) => sortVal === 'name' ? a.name.localeCompare(b.name) : b.price - a.price);
+        cards.sort((a,b) => document.getElementById('sort').value === 'name' ? a.name.localeCompare(b.name) : b.price - a.price);
 
         if(currentMode === 'edit') {
-            let h = `<div style="max-width:800px; margin:20px auto; background:white; padding:20px; border-radius:8px;"><h2>Modifier les quantités</h2><table width="100%">`;
+            let h = `<div style="max-width:800px; margin:20px auto; background:white; padding:20px; border-radius:8px;"><h2>Modifier Quantités</h2><table width="100%">`;
             cards.forEach((c,i) => {
-                h += `<tr><td>${c.name}</td><td>M: <input type="number" value="${c.main}" onchange="cards[${i}].main=parseInt(this.value)" style="width:45px"></td><td>S: <input type="number" value="${c.side}" onchange="cards[${i}].side=parseInt(this.value)" style="width:45px"></td></tr>`;
+                h += `<tr style="border-bottom:1px solid #eee;"><td>${c.name}</td>
+                <td>M: <input type="number" value="${c.main}" onchange="cards[${i}].main=parseInt(this.value)" style="width:50px"></td>
+                <td>S: <input type="number" value="${c.side}" onchange="cards[${i}].side=parseInt(this.value)" style="width:50px"></td></tr>`;
             });
             out.innerHTML = h + `</table></div>`;
         } 
         else if(currentMode === 'deck') {
             let tm=0, ts=0;
             const drawSec = (t) => {
-                const list = cards.filter(c => c.main > 0 && c.type === t);
-                if(!list.length) return '';
+                const list = cards.filter(c => c.main > 0 && (isMagic ? c.type === t : true));
+                if(!list.length || (!isMagic && t !== 'LISTE')) return '';
                 let s = 0;
                 let rows = list.map(c => { tm += c.main; s += c.main; return `<div class="card-row"><div class="qty-box">${c.main}</div>${c.name}</div>`}).join('');
                 return `<div class="section-bar"><span>${t}</span><span>${s}</span></div>${rows}`;
             };
-            const side = cards.filter(c => c.side > 0);
-            side.forEach(c => ts += c.side);
+            const sideCards = cards.filter(c => c.side > 0);
+            sideCards.forEach(c=> ts+=c.side);
 
             out.innerHTML = `<div class="page">
-                <div class="dl-header"><div><h1 style="margin:0">DECKLIST OFFICIELLE</h1><span>Format: ${formatVal}</span></div><div style="text-align:right">JOUEUR: ${playerVal}</div></div>
-                ${drawSec('CREATURES')}${drawSec('SPELLS')}${drawSec('LANDS')}
-                <div class="section-bar"><span>SIDEBOARD</span><span>${ts}</span></div>
-                ${side.length ? side.map(c => `<div class="card-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('') : '<div style="padding:10px">Aucun sideboard</div>'}
-                <div class="signature-area"><div class="sig-header">OFFICIAL USE ONLY</div><div class="sig-line"><span>Total Main Deck:</span><span>${tm}</span></div><div class="sig-line"><span>Total Sideboard:</span><span>${ts}</span></div><div class="sig-line" style="border:none"><span>Signature Juge:</span><span>___________</span></div></div>
+                <div class="dl-header"><div><h1 style="margin:0">DECKLIST OFFICIELLE</h1><span>Format: ${document.getElementById('fmt').value}</span></div><div style="text-align:right">JOUEUR: ${document.getElementById('plyr').value}</div></div>
+                ${isMagic ? drawSec('CREATURES')+drawSec('SPELLS')+drawSec('LANDS') : drawSec('LISTE DE CARTES')}
+                <div class="section-bar"><span>SIDEBOARD / RÉSERVE</span><span>${ts}</span></div>
+                ${sideCards.map(c=>`<div class="card-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('')}
+                <div class="sig-box"><div class="sig-h">OFFICIAL USE ONLY</div><div class="sig-r"><span>Total:</span><span>${tm+ts}</span></div><div class="sig-r" style="border:none"><span>Signature:</span><span>___________</span></div></div>
             </div>`;
         }
         else if(currentMode === 'cat') {
@@ -142,13 +153,13 @@
                 let g = `<div class="grid-cat">`;
                 cards.slice(i, i+10).forEach(c => {
                     g += `<div class="card-item">
-                        <div style="width:90px; border-right:1px solid #eee; padding:5px;"><img src="${c.img}" style="max-width:100%"></div>
-                        <div style="flex:1; padding:12px; display:flex; flex-direction:column;">
-                            <div style="font-size:0.6rem; color:#888;">SÉRIE</div>
-                            <div style="font-weight:bold;">${c.name} <span class="mana-sym">${c.mana}</span></div>
+                        <div style="width:90px; border-right:1px solid #eee; padding:5px; display:flex; align-items:center;"><img src="${c.img || 'https://via.placeholder.com/150'}" style="max-width:100%"></div>
+                        <div style="flex:1; padding:12px; display:flex; flex-direction:column; min-width:0;">
+                            <div style="font-size:0.6rem; color:#888;">${c.set}</div>
+                            <div style="font-weight:bold; font-size:1.1rem;">${c.name} ${c.mana ? `<span class="mana-tag">${c.mana}</span>` : ''}</div>
                             <div style="font-size:0.7rem; color:#444; flex-grow:1; margin-top:5px; overflow:hidden;">${c.oracle}</div>
-                            <div class="price-text">${c.price.toFixed(2)}$</div>
-                        </div><div style="position:absolute; top:5px; right:5px; background:#000; color:#fff; padding:2px 6px; border-radius:4px; font-weight:bold;">x${c.qty}</div></div>`;
+                            <div class="price-tag">${c.price.toFixed(2)}$</div>
+                        </div><div style="position:absolute; top:5px; right:5px; background:#000; color:#fff; padding:2px 8px; border-radius:5px; font-weight:bold;">x${c.qty}</div></div>`;
                 });
                 out.innerHTML += `<div class="page">${g}</div></div>`;
             }
