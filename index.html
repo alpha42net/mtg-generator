@@ -2,29 +2,41 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v107 - Refresh Visible</title>
+    <title>Magic Master v108 - Bouton Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; --yellow: #ffeb3b; }
         body { font-family: 'Arial Narrow', sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
-        /* BARRE DE CONTRÔLE */
+        /* BARRE DE CONTRÔLE OPTIMISÉE */
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 999; }
-        .ctrl-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1fr 1.5fr 0.8fr; gap: 10px; max-width: 1600px; margin: 0 auto; align-items: end; }
-        .field { display: flex; flex-direction: column; gap: 4px; }
+        .ctrl-grid { display: flex; flex-wrap: wrap; gap: 15px; max-width: 1600px; margin: 0 auto; align-items: flex-end; }
+        
+        .field { display: flex; flex-direction: column; gap: 4px; min-width: 150px; }
         label { font-size: 10px; color: var(--gold); font-weight: bold; text-transform: uppercase; }
         input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; font-size: 11px; }
 
         .btn-grp { display: flex; gap: 4px; }
-        .btn-opt { flex: 1; padding: 6px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 9px; font-weight: bold; border-radius: 4px; text-align: center; }
+        .btn-opt { flex: 1; padding: 8px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; text-align: center; }
         .btn-opt.active { background: var(--gold); color: black; }
-        .count-badge { display: block; font-size: 8px; margin-top: 2px; opacity: 0.8; }
+        .count-badge { display: block; font-size: 8px; margin-top: 2px; opacity: 0.9; }
 
-        /* BOUTON REFRESH SPECIAL */
-        .btn-refresh { background: var(--yellow) !important; color: #000 !important; border: none; padding: 8px 12px; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 10px; text-transform: uppercase; transition: 0.2s; }
-        .btn-refresh:hover { background: #fff !important; transform: scale(1.05); }
+        /* LE BOUTON REFRESH (TRÈS VISIBLE) */
+        .big-refresh { 
+            background: var(--yellow) !important; 
+            color: #000 !important; 
+            border: none; 
+            padding: 10px 20px; 
+            font-weight: 900; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(255, 235, 59, 0.4);
+        }
+        .big-refresh:hover { background: #fff !important; transform: scale(1.05); }
 
-        /* PAGES & CONTENU */
+        /* PAGES */
         .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 15mm; box-sizing: border-box; position: relative; color: #000; page-break-after: always; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
         .dl-container { margin-left: 15mm; width: calc(100% - 15mm); }
         .dl-main-title { font-size: 18pt; font-weight: bold; text-align: center; margin-bottom: 10px; text-transform: uppercase; }
@@ -40,9 +52,9 @@
         .cat-item { border: 1px solid #ddd; display: flex; height: 49mm; position: relative; background: #fff; overflow: hidden; }
         .cat-img { width: 105px; border-right: 1px solid #eee; object-fit: contain; background: #fafafa; }
         .cat-content { padding: 10px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .cat-title { font-weight: bold; font-size: 10pt; display: flex; justify-content: space-between; align-items: flex-start; }
+        .cat-title { font-weight: bold; font-size: 10pt; display: flex; justify-content: space-between; }
         .cat-type { font-size: 7pt; color: var(--gold); font-weight: bold; text-transform: uppercase; }
-        .cat-oracle { font-size: 7pt; color: #444; line-height: 1.1; margin: 4px 0; flex-grow: 1; overflow: hidden; }
+        .cat-oracle { font-size: 7pt; color: #444; line-height: 1.1; margin: 4px 0; overflow: hidden; }
         .price-green { color: var(--green); font-size: 1.8rem; font-weight: 900; }
         .mana-svg { height: 14px; margin-left: 2px; }
         .qty-badge { position: absolute; bottom: 5px; right: 5px; background: #000; color: #fff; padding: 2px 6px; font-weight: bold; font-size: 9pt; }
@@ -55,11 +67,11 @@
 
 <div id="ui-gate">
     <div class="ctrl-grid">
-        <div class="field">
-            <label>1. Fichier CSV</label>
-            <div style="display:flex; gap:5px;">
-                <input type="file" id="csvFile" onchange="loadCSV()" style="width:140px;">
-                <button class="btn-refresh" onclick="loadCSV()">REFRESH 🔄</button>
+        <div class="field" style="min-width: 250px;">
+            <label>1. Fichier CSV & Rafraîchir</label>
+            <div style="display:flex; gap:8px;">
+                <input type="file" id="csvFile" onchange="loadCSV()" style="width:160px;">
+                <button class="big-refresh" id="btnRefresh" onclick="loadCSV()">REFRESH 🔄</button>
             </div>
         </div>
 
@@ -73,7 +85,7 @@
 
         <div class="field">
             <label>3. Mode</label>
-            <select id="mode" onchange="render()">
+            <select id="mode" onchange="render()" style="width:150px;">
                 <option value="edit">✍️ AJUSTEMENTS</option>
                 <option value="deck" selected>📄 DECKLIST</option>
                 <option value="cat">💰 CATALOGUE</option>
@@ -81,7 +93,7 @@
         </div>
 
         <div class="field">
-            <label>4. Format & Compteur</label>
+            <label>4. Format</label>
             <div class="btn-grp">
                 <button class="btn-opt active" id="f-std" onclick="setFmt('STANDARD')">STD<span class="count-badge" id="v-std">0/60</span></button>
                 <button class="btn-opt" id="f-mod" onclick="setFmt('MODERN')">MOD<span class="count-badge" id="v-mod">0/60</span></button>
@@ -99,13 +111,11 @@
         </div>
 
         <div class="field">
-            <label>6. Infos Deck</label>
-            <input type="text" id="p_name" value="BELEREN, Jace" oninput="render()" placeholder="Joueur">
-            <input type="text" id="p_deckname" placeholder="Deck Name" oninput="render()">
-            <input type="text" id="p_event" placeholder="Event" oninput="render()">
+            <label>6. Infos Joueur</label>
+            <input type="text" id="p_name" value="BELEREN, Jace" oninput="render()" placeholder="Nom">
         </div>
 
-        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px; font-weight:bold; cursor:pointer; border-radius:4px; height:35px;">IMPRIMER</button>
+        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; border-radius:4px; height:35px; margin-left: auto;">IMPRIMER</button>
     </div>
 </div>
 
@@ -145,10 +155,15 @@
         }).join('') || '';
     }
 
-    function loadCSV() {
-        const file = document.getElementById('csvFile').files[0];
-        if(!file) { alert("Veuillez d'abord sélectionner un fichier CSV."); return; }
+    async function loadCSV() {
+        const fileInput = document.getElementById('csvFile');
+        const file = fileInput.files[0];
+        if(!file) { alert("SVP Sélectionnez un fichier CSV"); return; }
         
+        // Petit effet visuel pour confirmer le refresh
+        const btn = document.getElementById('btnRefresh');
+        btn.innerText = "LOADING...";
+
         Papa.parse(file, {
             header: true, skipEmptyLines: true,
             complete: async (r) => {
@@ -170,6 +185,7 @@
                     }
                     cards.push(c);
                 }
+                btn.innerText = "REFRESH 🔄";
                 updateCounters();
                 render();
             }
@@ -180,12 +196,10 @@
         const out = document.getElementById('view');
         const mode = document.getElementById('mode').value;
         const pn = document.getElementById('p_name').value;
-        const pe = document.getElementById('p_event').value;
-        const pd = document.getElementById('p_deckname').value;
         out.innerHTML = '';
 
         if(mode === 'edit') {
-            let h = `<div style="padding:40px; background:white; max-width:800px; margin:20px auto; border-radius:10px;"><h2>Ajustements Rapides</h2>`;
+            let h = `<div style="padding:40px; background:white; max-width:800px; margin:20px auto; border-radius:10px;"><h2>Ajustements</h2>`;
             cards.forEach((c,i) => {
                 h += `<div class="c-row"><span style="flex:1"><b>${c.name}</b></span>
                 <input type="number" step="0.01" value="${c.price}" onchange="cards[${i}].price=parseFloat(this.value)" style="width:65px; margin-right:10px;">
@@ -206,11 +220,10 @@
                 <div class="dl-container">
                     <div class="dl-main-title">MAGIC: THE GATHERING DECKLIST</div>
                     <table class="dl-header-table">
-                        <tr><td width="50%"><b>DATE:</b><br>${new Date().toLocaleDateString()}</td><td><b>EVENT:</b><br>${pe}</td></tr>
-                        <tr><td><b>DECK NAME:</b><br>${pd}</td><td><b>FORMAT:</b><br>${curFmt}</td></tr>
+                        <tr><td width="50%"><b>DATE:</b><br>${new Date().toLocaleDateString()}</td><td><b>FORMAT:</b><br>${curFmt}</td></tr>
                     </table>
                     <div class="dl-grid-layout">
-                        <div><div class="dl-sect-head">Main Deck (Spells):</div>${m.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}</div>
+                        <div><div class="dl-sect-head">Main Deck:</div>${m.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}</div>
                         <div>
                             <div class="dl-sect-head">Lands:</div>${l.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}
                             <div class="dl-sect-head" style="margin-top:25px;">Sideboard:</div>${s.map(c=>`<div class="c-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('')}
