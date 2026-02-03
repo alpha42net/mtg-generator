@@ -2,29 +2,46 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v122 - Final Build</title>
+    <title>Magic Master v105-REPAIRED</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; --blue: #3498db; }
-        body { font-family: sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
+        body { font-family: 'Arial Narrow', sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
+        
+        /* HEADER SYSTÈME */
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 999; }
-        .ctrl-flex { display: flex; gap: 15px; align-items: flex-start; max-width: 1400px; margin: 0 auto; }
+        .ctrl-flex { display: flex; flex-wrap: wrap; gap: 15px; max-width: 1600px; margin: 0 auto; align-items: flex-end; }
+        
         .field { display: flex; flex-direction: column; gap: 4px; }
-        
-        /* BOUTON REFRESH SOUS LE CSV */
-        .btn-refresh { background: var(--blue); color: white; border: 2px solid orange; padding: 8px; cursor: pointer; font-weight: bold; font-size: 10px; margin-top: 2px; }
-        
-        .btn-grp { display: flex; gap: 5px; }
-        .btn-opt { padding: 8px 15px; background: #333; color: white; border: 1px solid #444; cursor: pointer; font-weight: bold; }
+        label { font-size: 10px; color: var(--gold); font-weight: bold; text-transform: uppercase; }
+        input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; font-size: 11px; }
+
+        /* TOUCHE REFRESH (AJOUTÉE) */
+        .btn-refresh { 
+            background: var(--blue); 
+            color: white; 
+            border: 2px solid #ff9800; 
+            padding: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            font-size: 10px; 
+            margin-top: 2px;
+            text-transform: uppercase;
+        }
+
+        /* BOUTONS FORMAT */
+        .btn-grp { display: flex; gap: 4px; }
+        .btn-opt { padding: 8px 15px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 11px; font-weight: bold; border-radius: 4px; }
         .btn-opt.active { background: var(--gold); color: black; border-color: white; }
 
-        /* GRILLE TYPE CATALOGUE (2 colonnes comme ton image) */
-        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 10mm; box-shadow: 0 0 10px rgba(0,0,0,0.2); color: #000; }
-        .grid-cat { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .item { border: 1px solid #ddd; padding: 15px; display: flex; align-items: center; position: relative; min-height: 100px; }
-        .price { color: var(--green); font-size: 28pt; font-weight: 900; margin-left: auto; }
-        .qty-label { position: absolute; bottom: 8px; right: 8px; background: black; color: white; padding: 3px 8px; font-size: 10pt; font-weight: bold; }
-        
+        /* RENDU PAGE */
+        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 10mm; box-sizing: border-box; page-break-after: always; box-shadow: 0 0 10px rgba(0,0,0,0.2); color: #000; }
+        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .item-box { border: 1px solid #eee; padding: 10px; display: flex; align-items: center; justify-content: space-between; position: relative; min-height: 60px; }
+        .price-text { color: var(--green); font-size: 24pt; font-weight: 900; }
+        .qty-badge { position: absolute; top: 2px; right: 2px; background: #000; color: #fff; padding: 2px 5px; font-size: 8pt; border-radius: 3px; }
+
         @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; } }
     </style>
 </head>
@@ -33,79 +50,96 @@
 <div id="ui-gate">
     <div class="ctrl-flex">
         <div class="field">
-            <label style="font-size: 10px; color: var(--gold);">1. CSV SOURCE</label>
-            <input type="file" id="csvFile" onchange="loadCSV()">
-            <button class="btn-refresh" onclick="loadCSV()">REFRESH DATA 🔄</button>
+            <label>1. IMPORT CSV</label>
+            <input type="file" id="csvFile" onchange="loadData()">
+            <button class="btn-refresh" onclick="loadData()">RAFRAÎCHIR 🔄</button>
         </div>
 
         <div class="field">
-            <label style="font-size: 10px; color: var(--gold);">2. FORMAT (FIXED)</label>
+            <label>2. FORMAT</label>
             <div class="btn-grp">
-                <button class="btn-opt active" id="f-std" onclick="updateFmt('STANDARD')">STD</button>
-                <button class="btn-opt" id="f-mod" onclick="updateFmt('MODERN')">MOD</button>
+                <button class="btn-opt active" id="f-std" onclick="setFormat('STANDARD')">STD</button>
+                <button class="btn-opt" id="f-mod" onclick="setFormat('MODERN')">MOD</button>
             </div>
         </div>
 
-        <button onclick="window.print()" style="margin-left:auto; background:var(--green); border:none; padding:12px 25px; font-weight:bold; cursor:pointer; border-radius:4px; align-self: center;">IMPRIMER</button>
+        <div class="field">
+            <label>3. AFFICHAGE</label>
+            <select id="ui-mode" onchange="renderUI()">
+                <option value="grid">GRILLE CATALOGUE</option>
+                <option value="list">LISTE SIMPLE</option>
+            </select>
+        </div>
+
+        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; border-radius:4px; margin-left:auto;">IMPRIMER PDF</button>
     </div>
 </div>
 
-<div id="view"></div>
+<div id="main-view"></div>
 
 <script>
-    let currentData = [];
-    let activeFormat = 'STANDARD';
+    let rawCards = [];
+    let currentFmt = 'STANDARD';
 
-    // REPARATION BOUTON STD/MOD
-    function updateFmt(f) {
-        activeFormat = f;
+    // FIX DU BOUTON FORMAT : On change la variable ET on relance le dessin
+    function setFormat(mode) {
+        currentFmt = mode;
         document.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
-        if(f === 'STANDARD') document.getElementById('f-std').classList.add('active');
-        if(f === 'MODERN') document.getElementById('f-mod').classList.add('active');
-        draw();
+        if(mode === 'STANDARD') document.getElementById('f-std').classList.add('active');
+        if(mode === 'MODERN') document.getElementById('f-mod').classList.add('active');
+        renderUI();
     }
 
-    function loadCSV() {
-        const fileInput = document.getElementById('csvFile').files[0];
-        if(!fileInput) return;
-        Papa.parse(fileInput, {
+    function loadData() {
+        const file = document.getElementById('csvFile').files[0];
+        if(!file) return;
+        
+        Papa.parse(file, {
             header: true, skipEmptyLines: true,
             complete: (results) => {
-                currentData = results.data.map(row => ({
-                    name: row["product-name"] || row["Card Name"] || "Unknown",
+                rawCards = results.data.map(row => ({
+                    name: row["product-name"] || row["Card Name"] || "Nom inconnu",
                     price: parseFloat(row["Price (USD)"]) || 0,
                     qty: row["quantity"] || 1
                 }));
-                draw();
+                renderUI();
             }
         });
     }
 
-    function draw() {
-        const viewer = document.getElementById('view');
-        if (currentData.length === 0) {
-            viewer.innerHTML = '<div class="page"><h2 style="text-align:center; color:#ccc; padding-top:100px;">Charger un CSV pour commencer...</h2></div>';
+    function renderUI() {
+        const out = document.getElementById('main-view');
+        const mode = document.getElementById('ui-mode').value;
+        
+        if(rawCards.length === 0) {
+            out.innerHTML = '<div class="page"><h2 style="text-align:center; padding-top:50px; color:#999;">Aucune donnée chargée.</h2></div>';
             return;
         }
 
-        let content = `<div class="page">
-            <h2 style="text-transform: uppercase; border-bottom: 3px solid black; padding-bottom: 5px;">${activeFormat} LIST</h2>
-            <div class="grid-cat">`;
+        let html = `<div class="page">
+            <h2 style="border-bottom: 2px solid #000;">${currentFmt} - INVENTAIRE</h2>`;
         
-        currentData.forEach(item => {
-            content += `
-                <div class="item">
-                    <div style="font-size: 14pt;"><b>${item.name}</b></div>
-                    <div class="price">${item.price.toFixed(2)}$</div>
-                    <div class="qty-label">x${item.qty}</div>
+        if(mode === 'grid') {
+            html += `<div class="grid-2col">`;
+            rawCards.forEach(c => {
+                html += `
+                <div class="item-box">
+                    <div><b>${c.name}</b></div>
+                    <div class="price-text">${c.price.toFixed(2)}$</div>
+                    <div class="qty-badge">x${c.qty}</div>
                 </div>`;
-        });
+            });
+            html += `</div>`;
+        } else {
+            rawCards.forEach(c => {
+                html += `<div style="border-bottom:1px solid #eee; padding:5px;"><b>${c.qty}</b> x ${c.name} - ${c.price}$</div>`;
+            });
+        }
 
-        content += `</div></div>`;
-        viewer.innerHTML = content;
+        out.innerHTML = html + `</div>`;
     }
-    
-    draw();
+
+    renderUI();
 </script>
 </body>
 </html>
