@@ -2,175 +2,153 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v72 - Full Features Locked</title>
+    <title>Magic Master - Intégrale Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --gold: #d4af37; --dark: #111; --green: #27ae60; --bg: #cfd8dc; }
-        body { font-family: 'Helvetica', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        :root { --gold: #d4af37; --dark: #111; --green: #27ae60; }
+        body { font-family: 'Helvetica', Arial, sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
-        /* NAVIGATION ET BOUTONS */
-        #ui-gate { background: var(--dark); color: white; padding: 20px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 9999; }
-        .nav-btns { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto; align-items: end; }
+        /* HEADER & NAVIGATION */
+        #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 9999; }
         
-        button { padding: 12px 24px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 14px; transition: 0.2s; }
-        .btn-mode { background: #444; color: #ccc; }
-        .btn-mode.active { background: var(--gold); color: black; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
-        
-        .group { display: flex; flex-direction: column; }
-        label { font-size: 11px; color: var(--gold); font-weight: bold; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
-        input, select { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        .nav-tabs { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 15px; }
+        .tab-btn { padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; background: #444; color: #ccc; }
+        .tab-btn.active { background: var(--gold); color: black; }
 
-        /* DECKLIST OFFICIELLE */
-        .page { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 15mm; box-sizing: border-box; position: relative; page-break-after: always; color: #000; box-shadow: 0 0 20px rgba(0,0,0,0.2); }
-        .dl-header { border-bottom: 4px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .dl-section-title { background: #000; color: #fff; display: flex; justify-content: space-between; padding: 6px 12px; font-weight: 900; font-size: 11pt; margin-top: 15px; text-transform: uppercase; }
-        .dl-row { display: flex; border-bottom: 1px solid #eee; font-size: 10.5pt; height: 32px; align-items: center; }
-        .dl-qty-cell { width: 50px; text-align: center; font-weight: bold; border-right: 3px solid #000; margin-right: 15px; height: 100%; display: flex; align-items: center; justify-content: center; }
-        .official-box { position: absolute; bottom: 25mm; left: 35%; width: 100mm; border: 4px solid #000; background: #fff; z-index: 10; }
-        .official-head { background: #000; color: #fff; text-align: center; font-size: 9pt; font-weight: bold; padding: 6px; }
-        .official-stat { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px dashed #000; font-weight: bold; font-size: 12pt; }
+        .config-bar { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: flex-end; background: #1a1a1a; padding: 10px; border-radius: 8px; }
+        .field { display: flex; flex-direction: column; }
+        label { font-size: 10px; color: var(--gold); font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+        input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; }
+
+        /* DECKLIST FORMAT OFFICIEL */
+        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 15mm; box-sizing: border-box; position: relative; color: #000; box-shadow: 0 0 10px rgba(0,0,0,0.1); page-break-after: always; }
+        .dl-header { border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .section-bar { background: #000; color: #fff; display: flex; justify-content: space-between; padding: 4px 10px; font-weight: 900; font-size: 11pt; margin-top: 10px; }
+        .card-row { display: flex; border-bottom: 1px solid #ccc; font-size: 10pt; height: 28px; align-items: center; }
+        .qty-box { width: 40px; text-align: center; font-weight: bold; border-right: 2px solid #000; margin-right: 10px; }
+        
+        .signature-box { position: absolute; bottom: 20mm; left: 35%; width: 100mm; border: 3px solid #000; padding: 0; }
+        .sig-head { background: #000; color: #fff; text-align: center; font-weight: bold; font-size: 9pt; padding: 4px; }
+        .sig-row { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px dashed #000; font-weight: bold; }
 
         /* CATALOGUE & MANA */
-        .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
-        .card-box { border: 1px solid #ddd; border-radius: 12px; display: flex; height: 50mm; position: relative; overflow: hidden; background: #fff; }
-        .mana-cost { font-size: 0.9rem; margin-left: 10px; color: #333; font-weight: bold; }
-        .price-tag { color: var(--green); font-size: 2rem; font-weight: 900; margin-top: auto; }
+        .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 4mm; height: 100%; }
+        .cat-card { border: 1px solid #ddd; border-radius: 10px; display: flex; height: 48mm; overflow: hidden; position: relative; }
+        .mana { font-weight: bold; color: #444; margin-left: 8px; }
+        .price { color: var(--green); font-size: 1.8rem; font-weight: 900; margin-top: auto; }
 
-        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; width: 100%; } }
+        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; } }
     </style>
 </head>
 <body>
 
 <div id="ui-gate">
-    <div class="nav-btns">
-        <button id="btn-edit" class="btn-mode active" onclick="switchMode('edit')">✍️ MODIFIER DECK</button>
-        <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">📄 DECKLIST OFFICIELLE</button>
-        <button id="btn-cat" class="btn-mode" onclick="switchMode('cat')">💰 CATALOGUE & VALEUR</button>
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="setMode('edit')">✍️ Modifier</button>
+        <button class="tab-btn" onclick="setMode('deck')">📄 Decklist Officielle</button>
+        <button class="tab-btn" onclick="setMode('cat')">💰 Catalogue</button>
     </div>
-    <div class="controls-grid">
-        <div class="group"><label>Fichier CSV</label><input type="file" id="csvIn" onchange="processData()"></div>
-        <div class="group">
-            <label>Tri / Source Prix</label>
-            <select id="sortType" onchange="applySort()">
-                <option value="mtghockey">Prix (MTG Hockey)</option>
+    <div class="config-bar">
+        <div class="field"><label>Fichier CSV</label><input type="file" id="csvFile" onchange="loadCSV()"></div>
+        <div class="field">
+            <label>Tri / Prix</label>
+            <select id="sort" onchange="render()">
+                <option value="price">MTG Hockey (Décroissant)</option>
                 <option value="name">Nom (A-Z)</option>
             </select>
         </div>
-        <div class="group"><label>Format Tournoi</label><input type="text" id="fmtN" value="Standard / Modern" oninput="render()"></div>
-        <div class="group"><label>Nom du Joueur</label><input type="text" id="playN" value="Vendeur Magic" oninput="render()"></div>
-        <button onclick="window.print()" style="background:var(--green); color:white;">GÉNÉRER PDF</button>
+        <div class="field"><label>Format</label><input type="text" id="fmt" value="Modern / Standard" oninput="render()"></div>
+        <div class="field"><label>Joueur</label><input type="text" id="plyr" value="Vendeur Magic" oninput="render()"></div>
+        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">GÉNÉRER PDF</button>
     </div>
 </div>
 
-<div id="main-content"></div>
+<div id="view"></div>
 
 <script>
-    let cardData = [];
-    let currentMode = 'edit';
+    let cards = [];
+    let mode = 'edit';
 
-    function switchMode(m) {
-        currentMode = m;
-        document.querySelectorAll('.btn-mode').forEach(b => b.classList.toggle('active', b.id === `btn-${m}`));
+    function setMode(m) {
+        mode = m;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(m)));
         render();
     }
 
-    async function processData() {
-        const file = document.getElementById('csvIn').files[0];
-        if(!file) return;
+    function loadCSV() {
+        const file = document.getElementById('csvFile').files[0];
         Papa.parse(file, {
             header: true, skipEmptyLines: true,
-            complete: async (res) => {
-                cardData = [];
-                for (let row of res.data) {
+            complete: async (r) => {
+                cards = [];
+                for (let row of r.data) {
                     let name = row["product-name"] || row["Card Name"] || "Nom";
-                    let item = {
-                        name: name, qty: parseInt(row["quantity"]) || 1, main: parseInt(row["quantity"]) || 1, side: 0,
-                        set: row["Set"] || "N/A", 
-                        price: parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0,
-                        type: "SPELLS", image: "", mana: "", oracle: ""
-                    };
+                    let c = { name, qty: parseInt(row["quantity"])||1, main: parseInt(row["quantity"])||1, side: 0, 
+                             price: parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0,
+                             set: row["Set"] || "N/A", img: "", mana: "", type: "SPELLS", oracle: "" };
                     try {
-                        const r = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
-                        const d = await r.json();
-                        item.image = d.image_uris?.normal || "";
-                        item.mana = d.mana_cost || "";
-                        item.oracle = d.oracle_text || "";
-                        if(d.type_line.toLowerCase().includes("land")) item.type = "LANDS";
-                        else if(d.type_line.toLowerCase().includes("creature")) item.type = "CREATURES";
+                        const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
+                        const d = await res.json();
+                        c.img = d.image_uris?.normal || "";
+                        c.mana = d.mana_cost || "";
+                        c.oracle = d.oracle_text || "";
+                        if(d.type_line.includes("Land")) c.type = "LANDS";
+                        else if(d.type_line.includes("Creature")) c.type = "CREATURES";
                     } catch(e) {}
-                    cardData.push(item);
+                    cards.push(c);
                 }
-                applySort();
+                render();
             }
         });
     }
 
-    function applySort() {
-        const s = document.getElementById('sortType').value;
-        if(s === 'name') cardData.sort((a,b) => a.name.localeCompare(b.name));
-        else cardData.sort((a,b) => b.price - a.price);
-        render();
-    }
-
     function render() {
-        const out = document.getElementById('main-content');
+        const out = document.getElementById('view');
         out.innerHTML = '';
-        const playN = document.getElementById('playN').value;
-        const fmt = document.getElementById('fmtN').value;
+        const sortVal = document.getElementById('sort').value;
+        cards.sort((a,b) => sortVal === 'name' ? a.name.localeCompare(b.name) : b.price - a.price);
 
-        if(currentMode === 'edit') {
-            let h = `<div style="max-width:1000px; margin:40px auto; background:white; padding:40px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
-                <h2 style="border-bottom:2px solid #eee; padding-bottom:15px;">Édition du Deck</h2><table style="width:100%; border-collapse:collapse;">
-                <tr style="text-align:left; color:#666;"><th>Carte</th><th>Main</th><th>Side</th></tr>`;
-            cardData.forEach((c, i) => {
-                h += `<tr style="border-bottom:1px solid #eee;"><td style="padding:12px;"><b>${c.name}</b></td>
-                <td><input type="number" style="width:65px; color:black; background:#f9f9f9; border:1px solid #ccc;" value="${c.main}" onchange="cardData[${i}].main=parseInt(this.value)"></td>
-                <td><input type="number" style="width:65px; color:black; background:#f9f9f9; border:1px solid #ccc;" value="${c.side}" onchange="cardData[${i}].side=parseInt(this.value)"></td></tr>`;
+        if(mode === 'edit') {
+            let h = `<div style="max-width:800px; margin:20px auto; background:white; padding:20px; border-radius:8px;"><h2>Répartition Main/Side</h2><table width="100%">`;
+            cards.forEach((c,i) => {
+                h += `<tr><td>${c.name}</td>
+                <td>M: <input type="number" value="${c.main}" onchange="cards[${i}].main=parseInt(this.value)" style="width:40px"></td>
+                <td>S: <input type="number" value="${c.side}" onchange="cards[${i}].side=parseInt(this.value)" style="width:40px"></td></tr>`;
             });
             out.innerHTML = h + `</table></div>`;
-        }
-        else if(currentMode === 'deck') {
-            let tm = 0, ts = 0;
-            const getSec = (label) => {
-                const list = cardData.filter(c => c.main > 0 && c.type === label);
+        } 
+        else if(mode === 'deck') {
+            let tm=0, ts=0;
+            const drawSec = (t) => {
+                const list = cards.filter(c => c.main > 0 && c.type === t);
                 if(!list.length) return '';
-                let sq = 0;
-                let rows = list.map(c => { tm += c.main; sq += c.main; return `<div class="dl-row"><div class="dl-qty-cell">${c.main}</div><div>${c.name}</div></div>`}).join('');
-                return `<div class="dl-section-title"><span>${label}</span><span>${sq}</span></div>${rows}`;
+                let s = 0;
+                let rows = list.map(c => { tm += c.main; s += c.main; return `<div class="card-row"><div class="qty-box">${c.main}</div>${c.name}</div>`}).join('');
+                return `<div class="section-bar"><span>${t}</span><span>${s}</span></div>${rows}`;
             };
-            const sideCards = cardData.filter(c => c.side > 0);
-            sideCards.forEach(c => ts += c.side);
+            const side = cards.filter(c => c.side > 0);
+            side.forEach(c => ts += c.side);
 
             out.innerHTML = `<div class="page">
-                <div class="dl-header"><div><h1 style="margin:0; font-size:26pt;">DECKLIST OFFICIELLE</h1><span>Format: ${fmt}</span></div><div style="text-align:right;"><span>JOUEUR: ${playN}</span></div></div>
-                ${getSec('CREATURES')}${getSec('SPELLS')}${getSec('LANDS')}
-                <div class="dl-section-title"><span>SIDEBOARD</span><span>${ts}</span></div>
-                ${sideCards.length ? sideCards.map(c => `<div class="dl-row"><div class="dl-qty-cell">${c.side}</div><div>${c.name}</div></div>`).join('') : '<div style="padding:20px; color:#aaa; font-style:italic;">Aucune carte en réserve</div>'}
-                <div class="official-box"><div class="official-head">OFFICIAL USE ONLY</div><div class="official-stat"><span>Total Main Deck:</span><span>${tm}</span></div><div class="official-stat"><span>Total Sideboard:</span><span>${ts}</span></div><div class="official-stat" style="border:none; padding-top:10px;"><span>Signature Juge:</span><span>________________</span></div></div>
+                <div class="dl-header"><div><h1 style="margin:0">DECKLIST OFFICIELLE</h1><span>Format: ${document.getElementById('fmt').value}</span></div><div>JOUEUR: ${document.getElementById('plyr').value}</div></div>
+                ${drawSec('CREATURES')}${drawSec('SPELLS')}${drawSec('LANDS')}
+                <div class="section-bar"><span>SIDEBOARD</span><span>${ts}</span></div>
+                ${side.length ? side.map(c => `<div class="card-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('') : '<div style="padding:10px; color:#999">Aucune carte en réserve</div>'}
+                <div class="signature-box"><div class="sig-head">OFFICIAL USE ONLY</div><div class="sig-row"><span>Total Main Deck:</span><span>${tm}</span></div><div class="sig-row"><span>Total Sideboard:</span><span>${ts}</span></div><div class="sig-row" style="border:none"><span>Signature Juge:</span><span>___________</span></div></div>
             </div>`;
         }
-        else if(currentMode === 'cat') {
-            const tops = [...cardData].sort((a,b) => b.price - a.price).slice(0, 9);
-            const total = cardData.reduce((s, c) => s + (c.price * c.qty), 0);
-            
-            let cover = `<div class="page"><h1 style="text-align:center; font-size:38pt; border-bottom:6px solid var(--gold); padding-bottom:20px;">${playN}</h1>
-                <div style="text-align:center; font-size:30pt; color:var(--green); margin:50px 0; font-weight:900;">VALEUR TOTALE : ${total.toFixed(2)}$</div>
-                <h3 style="text-transform:uppercase; letter-spacing:2px; border-left:5px solid black; padding-left:15px;">Top Value (MTG Hockey)</h3><div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;">`;
-            tops.forEach(c => { cover += `<div style="text-align:center; border:1px solid #eee; padding:15px; border-radius:12px; background:#fafafa;"><img src="${c.image}" style="width:100%; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.1);"><br><br><b>${c.name}</b><br><b style="color:var(--green); font-size:1.4rem;">${c.price.toFixed(2)}$</b></div>`; });
-            out.innerHTML += cover + `</div></div>`;
-
-            for (let i = 0; i < cardData.length; i += 10) {
+        else if(mode === 'cat') {
+            for (let i = 0; i < cards.length; i += 10) {
                 let g = `<div class="grid-cat">`;
-                cardData.slice(i, i+10).forEach(c => {
-                    g += `<div class="card-box"><div style="position:absolute; top:10px; right:10px; background:#000; color:#fff; padding:4px 10px; border-radius:6px; font-weight:900; font-size:14pt;">x${c.qty}</div>
-                        <div style="width:105px; border-right:1px solid #eee; display:flex; align-items:center; justify-content:center; padding:8px;"><img src="${c.image}" style="max-height:100%; max-width:100%;"></div>
-                        <div style="flex:1; padding:18px; display:flex; flex-direction:column; min-width:0;">
-                            <div style="font-size:0.7rem; color:#999; text-transform:uppercase; font-weight:bold;">${c.set}</div>
-                            <div style="font-weight:900; font-size:1.2rem; margin:2px 0;">${c.name} <span class="mana-cost">${c.mana}</span></div>
-                            <div style="font-size:0.75rem; color:#444; flex-grow:1; overflow:hidden; margin-top:5px; line-height:1.3;">${c.oracle}</div>
-                            <div class="price-tag">${c.price.toFixed(2)}$</div>
-                        </div></div>`;
+                cards.slice(i, i+10).forEach(c => {
+                    g += `<div class="cat-card">
+                        <div style="width:90px; border-right:1px solid #eee; padding:5px;"><img src="${c.img}" style="max-width:100%"></div>
+                        <div style="flex:1; padding:10px; display:flex; flex-direction:column;">
+                            <div style="font-size:0.6rem; color:#888;">${c.set}</div>
+                            <div style="font-weight:bold;">${c.name} <span class="mana">${c.mana}</span></div>
+                            <div style="font-size:0.7rem; color:#444; flex-grow:1; margin-top:5px;">${c.oracle}</div>
+                            <div class="price">${c.price.toFixed(2)}$</div>
+                        </div><div style="position:absolute; top:5px; right:5px; background:#000; color:#fff; padding:2px 6px; border-radius:4px; font-weight:bold;">x${c.qty}</div></div>`;
                 });
                 out.innerHTML += `<div class="page">${g}</div></div>`;
             }
