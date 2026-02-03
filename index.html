@@ -38,15 +38,15 @@
         .qty-box { width: 30px; border-right: 1.5px solid #000; text-align: center; font-weight: bold; margin-right: 8px; height: 100%; display: flex; align-items: center; justify-content: center; }
 
         /* FOOTER DECKLIST */
-        .dl-footer-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; gap: 10px; }
-        .totals-group { display: flex; flex-direction: column; gap: 10px; }
-        .total-deck-box { border: 1.5px solid #000; display: flex; width: 250px; height: 40px; }
+        .dl-footer-flex { display: flex; flex-direction: column; margin-top: 30px; gap: 15px; }
+        .totals-row { display: flex; gap: 20px; }
+        .total-deck-box { border: 1.5px solid #000; display: flex; flex: 1; height: 40px; }
         .total-label { background: #fff; padding: 10px; font-weight: bold; border-right: 1.5px solid #000; flex: 1; font-size: 8pt; display: flex; align-items: center; }
         .total-num { width: 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14pt; }
         
-        .judge-box { border: 1.5px solid #000; width: 320px; display: flex; flex-direction: column; }
+        .judge-box { border: 1.5px solid #000; width: 100%; display: flex; flex-direction: column; }
         .judge-top { background: #eee; text-align: center; font-weight: bold; font-size: 7pt; border-bottom: 1.5px solid #000; padding: 4px; }
-        .judge-bottom { display: grid; grid-template-columns: 1.2fr 1fr; height: 60px; font-size: 7pt; }
+        .judge-bottom { display: grid; grid-template-columns: 1fr 1fr; height: 50px; font-size: 7pt; }
         
         .vert-name { position: absolute; left: 5mm; top: 120mm; transform: rotate(-90deg); transform-origin: left top; font-size: 14pt; font-weight: bold; width: 300px; text-transform: uppercase; border: 1px solid #000; padding: 5px; text-align: center;}
 
@@ -85,9 +85,9 @@
         <div class="field">
             <label>Format</label>
             <div class="btn-grp">
-                <button class="btn-opt active" id="f-std" onclick="setFmt('STANDARD')">STD <span class="count" id="c-std">0</span></button>
-                <button class="btn-opt" id="f-mod" onclick="setFmt('MODERN')">MOD <span class="count" id="c-mod">0</span></button>
-                <button class="btn-opt" id="f-cmd" onclick="setFmt('CMD')">CMD <span class="count" id="c-cmd">0</span></button>
+                <button class="btn-opt active" id="f-std" onclick="setFmt('STANDARD')">STD</button>
+                <button class="btn-opt" id="f-mod" onclick="setFmt('MODERN')">MOD</button>
+                <button class="btn-opt" id="f-cmd" onclick="setFmt('CMD')">CMD</button>
             </div>
         </div>
         <div class="field"><label>Joueur</label><input type="text" id="p_name" value="BELEREN, Jace" oninput="render()"></div>
@@ -154,8 +154,8 @@
             out.innerHTML = h + `</div>`;
         } 
         else if(mode === 'deck') {
-            const m = cards.filter(c => c.main > 0 && !c.type_line.includes("Land"));
-            const l = cards.filter(c => c.main > 0 && c.type_line.includes("Land"));
+            const m = cards.filter(c => c.main > 0 && !(c.type_line && c.type_line.includes("Land")));
+            const l = cards.filter(c => c.main > 0 && (c.type_line && c.type_line.includes("Land")));
             const s = cards.filter(c => c.side > 0);
             const totalMain = cards.reduce((acc,c)=>acc+c.main,0);
             const totalSide = cards.reduce((acc,c)=>acc+c.side,0);
@@ -177,9 +177,9 @@
                         </div>
                     </div>
                     <div class="dl-footer-flex">
-                        <div class="totals-group">
-                            <div class="total-deck-box"><div class="total-label">TOTAL MAIN DECK:</div><div class="total-num">${totalMain}</div></div>
-                            <div class="total-deck-box"><div class="total-label">TOTAL SIDEBOARD:</div><div class="total-num">${totalSide}</div></div>
+                        <div class="totals-row">
+                            <div class="total-deck-box"><div class="total-label">MAIN DECK:</div><div class="total-num">${totalMain}</div></div>
+                            <div class="total-deck-box"><div class="total-label">SIDEBOARD:</div><div class="total-num">${totalSide}</div></div>
                         </div>
                         <div class="judge-box">
                             <div class="judge-top">FOR OFFICIAL USE ONLY</div>
