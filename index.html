@@ -2,62 +2,56 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v110 - Refresh Position Fix</title>
+    <title>Magic Master v116 - Code 16 Format</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; --yellow: #ffeb3b; }
-        body { font-family: 'Arial Narrow', sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
+        body { font-family: 'Courier New', Courier, monospace; background: #cfd8dc; margin: 0; padding: 0; }
         
-        #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 999; }
-        .ctrl-flex { display: flex; flex-wrap: wrap; gap: 15px; max-width: 1600px; margin: 0 auto; align-items: flex-start; }
+        /* HEADER SYSTÈME */
+        #ui-gate { background: var(--dark); color: white; padding: 12px; border-bottom: 3px solid #444; position: sticky; top: 0; z-index: 999; }
+        .ctrl-flex { display: flex; flex-wrap: wrap; gap: 10px; max-width: 1600px; margin: 0 auto; }
         
-        .field { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
-        label { font-size: 10px; color: var(--gold); font-weight: bold; text-transform: uppercase; }
-        input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; font-size: 11px; }
+        .field { display: flex; flex-direction: column; gap: 2px; min-width: 180px; }
+        label { font-size: 9px; color: #888; font-weight: bold; text-transform: uppercase; }
+        input, select { background: #000; border: 1px solid #333; color: #0f0; padding: 6px; border-radius: 2px; font-size: 11px; }
 
-        /* BOUTON REFRESH SOUS LE CSV */
-        .btn-refresh-block { 
-            background: var(--yellow) !important; 
-            color: black !important; 
-            border: none; 
-            padding: 8px; 
+        /* BOUTON REFRESH TYPE CODE 16 */
+        .btn-refresh-code16 { 
+            background: #222 !important; 
+            color: var(--yellow) !important; 
+            border: 1px solid var(--yellow); 
+            padding: 6px; 
             font-weight: bold; 
             cursor: pointer; 
-            border-radius: 4px; 
-            font-size: 11px;
+            border-radius: 2px; 
+            font-size: 10px;
             text-transform: uppercase;
-            margin-top: 2px;
+            margin-top: 4px;
+            text-align: center;
         }
-        .btn-refresh-block:hover { background: #fff !important; }
+        .btn-refresh-code16:hover { background: var(--yellow) !important; color: #000 !important; }
 
-        .btn-grp { display: flex; gap: 3px; }
-        .btn-opt { flex: 1; padding: 8px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 9px; font-weight: bold; border-radius: 4px; text-align: center; }
-        .btn-opt.active { background: var(--gold); color: black; }
-        .count-badge { display: block; font-size: 8px; margin-top: 2px; opacity: 0.9; }
+        .btn-grp { display: flex; gap: 2px; }
+        .btn-opt { flex: 1; padding: 6px; border: 1px solid #333; background: #222; color: #fff; cursor: pointer; font-size: 9px; font-weight: bold; }
+        .btn-opt.active { background: #444; color: var(--yellow); border-color: var(--yellow); }
 
         /* PAGES */
-        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 15mm; box-sizing: border-box; position: relative; page-break-after: always; box-shadow: 0 0 10px rgba(0,0,0,0.2); color: #000; }
-        .dl-container { margin-left: 15mm; width: calc(100% - 15mm); }
-        .dl-main-title { font-size: 18pt; font-weight: bold; text-align: center; margin-bottom: 10px; text-transform: uppercase; }
-        .dl-header-table { width: 100%; border: 1.5px solid #000; border-collapse: collapse; margin-bottom: 15px; }
-        .dl-header-table td { border: 1px solid #000; padding: 5px; font-size: 8pt; vertical-align: top; height: 30px; }
-        .dl-grid-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 25px; }
-        .dl-sect-head { font-weight: bold; font-size: 10pt; border-bottom: 1.5px solid #000; padding-bottom: 3px; margin-bottom: 5px; margin-top: 10px; }
-        .c-row { display: flex; border-bottom: 1px solid #ccc; height: 22px; align-items: center; font-size: 9pt; }
-        .qty-box { width: 30px; border-right: 1.5px solid #000; text-align: center; font-weight: bold; margin-right: 8px; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 10mm; box-sizing: border-box; position: relative; page-break-after: always; color: #000; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .dl-main-title { font-size: 16pt; font-weight: bold; text-align: center; border-bottom: 2px solid #000; margin-bottom: 10px; }
+        .c-row { display: flex; border-bottom: 1px dotted #000; height: 20px; align-items: center; font-size: 9pt; }
+        .qty-box { width: 25px; font-weight: bold; border-right: 1px solid #000; margin-right: 5px; text-align: center; }
 
-        /* CATALOGUE */
-        .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
-        .cat-item { border: 1px solid #ddd; display: flex; height: 49mm; position: relative; background: #fff; overflow: hidden; }
-        .cat-img { width: 105px; border-right: 1px solid #eee; object-fit: contain; background: #fafafa; }
-        .cat-content { padding: 10px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .cat-oracle { font-size: 7pt; color: #444; line-height: 1.1; margin: 4px 0; flex-grow: 1; overflow: hidden; }
-        .price-green { color: var(--green); font-size: 1.8rem; font-weight: 900; }
-        .mana-svg { height: 14px; margin-left: 2px; }
-        .qty-badge { position: absolute; bottom: 5px; right: 5px; background: #000; color: #fff; padding: 2px 6px; font-weight: bold; font-size: 9pt; }
-        .vert-name { position: absolute; left: 5mm; top: 120mm; transform: rotate(-90deg); transform-origin: left top; font-size: 14pt; font-weight: bold; width: 300px; text-transform: uppercase; border: 1px solid #000; padding: 5px; text-align: center;}
+        /* CATALOGUE MTG DATA */
+        .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 4mm; height: 100%; }
+        .cat-item { border: 1px solid #000; display: flex; height: 48mm; overflow: hidden; }
+        .cat-img { width: 95px; border-right: 1px solid #000; object-fit: contain; }
+        .cat-content { padding: 8px; flex: 1; display: flex; flex-direction: column; }
+        .cat-oracle { font-size: 6.5pt; line-height: 1; margin: 4px 0; overflow: hidden; flex-grow: 1; font-family: sans-serif; }
+        .price-green { color: #000; font-size: 1.5rem; font-weight: bold; border-top: 1px solid #000; text-align: right; }
+        .mana-svg { height: 12px; margin-left: 1px; }
 
-        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; border: none; } }
+        @media print { #ui-gate { display: none !important; } .page { margin: 0; border: none; } }
     </style>
 </head>
 <body>
@@ -66,54 +60,43 @@
     <div class="ctrl-flex">
         
         <div class="field">
-            <label>1. CSV Source</label>
+            <label>SYS_SOURCE_CSV</label>
             <input type="file" id="csvFile" onchange="loadCSV()">
-            <button class="btn-refresh-block" onclick="loadCSV()">Rafraîchir les données 🔄</button>
+            <button class="btn-refresh-code16" onclick="loadCSV()">EXECUTE REFRESH_LOAD</button>
         </div>
 
         <div class="field">
-            <label>2. Moteur</label>
+            <label>ENGINE_TYPE</label>
             <div class="btn-grp">
-                <button class="btn-opt active" id="m-mtg" onclick="setEng('mtg')">MTG</button>
-                <button class="btn-opt" id="m-sport" onclick="setEng('sport')">SPORT</button>
+                <button class="btn-opt active" id="m-mtg" onclick="setEng('mtg')">MTG_DATA</button>
+                <button class="btn-opt" id="m-sport" onclick="setEng('sport')">SPORT_DATA</button>
             </div>
         </div>
 
         <div class="field">
-            <label>3. Mode d'affichage</label>
+            <label>OUTPUT_MODE</label>
             <select id="mode" onchange="render()">
-                <option value="edit">✍️ AJUSTEMENTS</option>
-                <option value="deck" selected>📄 DECKLIST</option>
-                <option value="cat">💰 CATALOGUE</option>
+                <option value="edit">MOD_EDIT</option>
+                <option value="deck" selected>MOD_DECKLIST</option>
+                <option value="cat">MOD_CATALOG</option>
             </select>
         </div>
 
         <div class="field">
-            <label>4. Format</label>
+            <label>FORMAT_LIMIT</label>
             <div class="btn-grp">
-                <button class="btn-opt active" id="f-std" onclick="setFmt('STANDARD')">STD<span class="count-badge" id="v-std">0/60</span></button>
-                <button class="btn-opt" id="f-mod" onclick="setFmt('MODERN')">MOD<span class="count-badge" id="v-mod">0/60</span></button>
-                <button class="btn-opt" id="f-cmd" onclick="setFmt('CMD')">CMD<span class="count-badge" id="v-cmd">0/100</span></button>
+                <button class="btn-opt active" id="f-std" onclick="setFmt('STANDARD')">STD</button>
+                <button class="btn-opt" id="f-mod" onclick="setFmt('MODERN')">MOD</button>
+                <button class="btn-opt" id="f-cmd" onclick="setFmt('CMD')">CMD</button>
             </div>
         </div>
 
         <div class="field">
-            <label>5. Tri</label>
-            <div class="btn-grp">
-                <button class="btn-opt" onclick="cards.sort((a,b)=>b.price-a.price);render()">$$</button>
-                <button class="btn-opt" onclick="cards.sort((a,b)=>a.name.localeCompare(b.name));render()">A-Z</button>
-                <button class="btn-opt" onclick="cards.sort((a,b)=>a.set.localeCompare(b.set));render()">SET</button>
-            </div>
+            <label>USER_ID</label>
+            <input type="text" id="p_name" value="ADMIN_01" oninput="render()">
         </div>
 
-        <div class="field">
-            <label>6. Infos Deck & Joueur</label>
-            <input type="text" id="p_name" value="BELEREN, Jace" oninput="render()" placeholder="Joueur">
-            <input type="text" id="p_deckname" placeholder="Nom du Deck" oninput="render()" style="margin-top:2px;">
-            <input type="text" id="p_event" placeholder="Événement" oninput="render()" style="margin-top:2px;">
-        </div>
-
-        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; border-radius:4px; height:40px; align-self: center; margin-left:auto;">IMPRIMER</button>
+        <button onclick="window.print()" style="background:var(--green); color:black; border:none; padding:10px; font-weight:bold; cursor:pointer; height:45px; align-self: flex-end; margin-left:auto;">PRINT_OUT</button>
     </div>
 </div>
 
@@ -121,28 +104,13 @@
 
 <script>
     let cards = [];
-    let curFmt = 'STANDARD';
     let curEng = 'mtg';
-
-    function setFmt(f) { 
-        curFmt = f;
-        document.querySelectorAll('[id^="f-"]').forEach(b => b.classList.remove('active'));
-        document.getElementById('f-' + f.toLowerCase().substring(0,3)).classList.add('active');
-        render(); 
-    }
 
     function setEng(e) { 
         curEng = e; 
         document.getElementById('m-mtg').classList.toggle('active', e==='mtg');
         document.getElementById('m-sport').classList.toggle('active', e==='sport');
         loadCSV(); 
-    }
-
-    function updateCounters() {
-        const total = cards.reduce((acc, c) => acc + (c.main || 0) + (c.side || 0), 0);
-        document.getElementById('v-std').innerText = `${total}/60`;
-        document.getElementById('v-mod').innerText = `${total}/60`;
-        document.getElementById('v-cmd').innerText = `${total}/100`;
     }
 
     function getManaIcons(manaStr) {
@@ -161,9 +129,9 @@
             complete: async (r) => {
                 cards = [];
                 for (let row of r.data) {
-                    let name = row["product-name"] || row["Card Name"] || "Carte";
+                    let name = row["product-name"] || row["Card Name"] || "NULL_ITEM";
                     let price = (parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0);
-                    let c = { name, price, qty: parseInt(row["quantity"])||1, main: parseInt(row["quantity"])||1, side: 0, set: row["Set"]||"", img: "", type_line: "", oracle: "", mana: "" };
+                    let c = { name, price, main: parseInt(row["quantity"])||1, side: 0, set: row["Set"]||"", img: "", type_line: "", oracle: "", mana: "" };
                     if(curEng === 'mtg') {
                         try {
                             const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
@@ -177,7 +145,6 @@
                     }
                     cards.push(c);
                 }
-                updateCounters();
                 render();
             }
         });
@@ -187,63 +154,31 @@
         const out = document.getElementById('view');
         const mode = document.getElementById('mode').value;
         const pn = document.getElementById('p_name').value;
-        const pe = document.getElementById('p_event').value;
-        const pd = document.getElementById('p_deckname').value;
         out.innerHTML = '';
 
-        if(mode === 'edit') {
-            let h = `<div style="padding:40px; background:white; max-width:800px; margin:20px auto; border-radius:10px;"><h2>Ajustements Rapides</h2>`;
-            cards.forEach((c,i) => {
-                h += `<div class="c-row"><span style="flex:1"><b>${c.name}</b></span>
-                <input type="number" step="0.01" value="${c.price}" onchange="cards[${i}].price=parseFloat(this.value)" style="width:65px; margin-right:10px;">
-                <span>M: <input type="number" value="${c.main}" onchange="cards[${i}].main=parseInt(this.value);updateCounters()" style="width:35px">
-                S: <input type="number" value="${c.side}" onchange="cards[${i}].side=parseInt(this.value);updateCounters()" style="width:35px"></span></div>`;
-            });
-            out.innerHTML = h + `</div>`;
-        } 
-        else if(mode === 'deck') {
-            const m = cards.filter(c => c.main > 0 && !(c.type_line && (c.type_line.includes("Land") || c.type_line.includes("Terrain"))));
-            const l = cards.filter(c => c.main > 0 && (c.type_line && (c.type_line.includes("Land") || c.type_line.includes("Terrain"))));
-            const s = cards.filter(c => c.side > 0);
-            
-            out.innerHTML = `<div class="page">
-                <div class="vert-name">NAME: ${pn}</div>
-                <div class="dl-container">
-                    <div class="dl-main-title">MAGIC: THE GATHERING DECKLIST</div>
-                    <table class="dl-header-table">
-                        <tr><td width="50%"><b>DATE:</b><br>${new Date().toLocaleDateString()}</td><td><b>EVENT:</b><br>${pe}</td></tr>
-                        <tr><td><b>DECK NAME:</b><br>${pd}</td><td><b>FORMAT:</b><br>${curFmt}</td></tr>
-                    </table>
-                    <div class="dl-grid-layout">
-                        <div><div class="dl-sect-head">Main Deck (Spells):</div>${m.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}</div>
-                        <div>
-                            <div class="dl-sect-head">Lands:</div>${l.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}
-                            <div class="dl-sect-head" style="margin-top:25px;">Sideboard:</div>${s.map(c=>`<div class="c-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('')}
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        }
-        else if(mode === 'cat') {
+        if(mode === 'cat') {
             for (let i = 0; i < cards.length; i += 10) {
                 let g = `<div class="grid-cat">`;
                 cards.slice(i, i+10).forEach(c => {
                     g += `<div class="cat-item">
                         <img src="${c.img}" class="cat-img">
                         <div class="cat-content">
-                            <div>
-                                <div style="font-weight:bold; font-size:10pt;">${c.name} ${getManaIcons(c.mana)}</div>
-                                <div style="font-size:7pt; color:var(--gold); font-weight:bold; text-transform:uppercase;">${c.type_line}</div>
-                                <div class="cat-oracle">${c.oracle}</div>
-                                <div style="font-size:6pt; color:#999;">${c.set}</div>
-                            </div>
-                            <div class="price-green">${c.price.toFixed(2)}$</div>
+                            <div style="font-weight:bold; font-size:9pt; border-bottom:1px solid #000;">${c.name} ${getManaIcons(c.mana)}</div>
+                            <div style="font-size:7pt; color:#666;">${c.type_line}</div>
+                            <div class="cat-oracle">${c.oracle}</div>
+                            <div class="price-green">$${c.price.toFixed(2)}</div>
                         </div>
-                        <div class="qty-badge">x${c.main + c.side}</div>
                     </div>`;
                 });
                 out.innerHTML += `<div class="page">${g}</div></div>`;
             }
+        } else {
+            // Vue decklist par défaut
+            let h = `<div class="page"><div class="dl-main-title">DATA_REPORT: ${pn}</div>`;
+            cards.forEach(c => {
+                h += `<div class="c-row"><div class="qty-box">${c.main}</div> ${c.name} [${c.set}]</div>`;
+            });
+            out.innerHTML = h + `</div>`;
         }
     }
 </script>
