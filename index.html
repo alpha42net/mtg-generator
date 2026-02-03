@@ -2,76 +2,68 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v108 - Bouton Fix</title>
+    <title>Magic Master v109 - Bouton Source Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; --yellow: #ffeb3b; }
         body { font-family: 'Arial Narrow', sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
-        /* BARRE DE CONTRÔLE OPTIMISÉE */
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 999; }
-        .ctrl-grid { display: flex; flex-wrap: wrap; gap: 15px; max-width: 1600px; margin: 0 auto; align-items: flex-end; }
         
-        .field { display: flex; flex-direction: column; gap: 4px; min-width: 150px; }
+        /* Flexbox pour garantir que tout reste aligné */
+        .ctrl-flex { display: flex; flex-wrap: wrap; gap: 20px; max-width: 1600px; margin: 0 auto; align-items: flex-end; }
+        
+        .field { display: flex; flex-direction: column; gap: 4px; }
         label { font-size: 10px; color: var(--gold); font-weight: bold; text-transform: uppercase; }
-        input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; font-size: 11px; }
+        
+        /* BLOC SOURCE : FICHIER + BOUTON CÔTE À CÔTE */
+        .source-group { display: flex; align-items: center; gap: 5px; background: #222; padding: 4px; border-radius: 4px; border: 1px solid #444; }
+        input[type="file"] { color: white; font-size: 11px; width: 180px; }
+        
+        .btn-refresh { 
+            background: var(--yellow) !important; 
+            color: black !important; 
+            border: 2px solid red !important; /* Contour rouge pour le trouver tout de suite */
+            padding: 6px 12px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            font-size: 11px;
+            white-space: nowrap;
+        }
 
-        .btn-grp { display: flex; gap: 4px; }
-        .btn-opt { flex: 1; padding: 8px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; text-align: center; }
+        .btn-grp { display: flex; gap: 2px; }
+        .btn-opt { padding: 8px 10px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; }
         .btn-opt.active { background: var(--gold); color: black; }
         .count-badge { display: block; font-size: 8px; margin-top: 2px; opacity: 0.9; }
 
-        /* LE BOUTON REFRESH (TRÈS VISIBLE) */
-        .big-refresh { 
-            background: var(--yellow) !important; 
-            color: #000 !important; 
-            border: none; 
-            padding: 10px 20px; 
-            font-weight: 900; 
-            cursor: pointer; 
-            border-radius: 4px; 
-            font-size: 12px; 
-            text-transform: uppercase;
-            box-shadow: 0 0 10px rgba(255, 235, 59, 0.4);
-        }
-        .big-refresh:hover { background: #fff !important; transform: scale(1.05); }
-
         /* PAGES */
-        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 15mm; box-sizing: border-box; position: relative; color: #000; page-break-after: always; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 15mm; box-sizing: border-box; position: relative; page-break-after: always; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
         .dl-container { margin-left: 15mm; width: calc(100% - 15mm); }
-        .dl-main-title { font-size: 18pt; font-weight: bold; text-align: center; margin-bottom: 10px; text-transform: uppercase; }
-        .dl-header-table { width: 100%; border: 1.5px solid #000; border-collapse: collapse; margin-bottom: 15px; }
-        .dl-header-table td { border: 1px solid #000; padding: 5px; font-size: 8pt; vertical-align: top; height: 30px; }
-        .dl-grid-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 25px; }
-        .dl-sect-head { font-weight: bold; font-size: 10pt; border-bottom: 1.5px solid #000; padding-bottom: 3px; margin-bottom: 5px; margin-top: 10px; }
         .c-row { display: flex; border-bottom: 1px solid #ccc; height: 22px; align-items: center; font-size: 9pt; }
         .qty-box { width: 30px; border-right: 1.5px solid #000; text-align: center; font-weight: bold; margin-right: 8px; height: 100%; display: flex; align-items: center; justify-content: center; }
 
         /* CATALOGUE */
         .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
         .cat-item { border: 1px solid #ddd; display: flex; height: 49mm; position: relative; background: #fff; overflow: hidden; }
-        .cat-img { width: 105px; border-right: 1px solid #eee; object-fit: contain; background: #fafafa; }
+        .cat-img { width: 105px; border-right: 1px solid #eee; object-fit: contain; }
         .cat-content { padding: 10px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .cat-title { font-weight: bold; font-size: 10pt; display: flex; justify-content: space-between; }
-        .cat-type { font-size: 7pt; color: var(--gold); font-weight: bold; text-transform: uppercase; }
-        .cat-oracle { font-size: 7pt; color: #444; line-height: 1.1; margin: 4px 0; overflow: hidden; }
         .price-green { color: var(--green); font-size: 1.8rem; font-weight: 900; }
         .mana-svg { height: 14px; margin-left: 2px; }
-        .qty-badge { position: absolute; bottom: 5px; right: 5px; background: #000; color: #fff; padding: 2px 6px; font-weight: bold; font-size: 9pt; }
-        .vert-name { position: absolute; left: 5mm; top: 120mm; transform: rotate(-90deg); transform-origin: left top; font-size: 14pt; font-weight: bold; width: 300px; text-transform: uppercase; border: 1px solid #000; padding: 5px; text-align: center;}
-
-        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; border: none; } }
+        
+        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; } }
     </style>
 </head>
 <body>
 
 <div id="ui-gate">
-    <div class="ctrl-grid">
-        <div class="field" style="min-width: 250px;">
-            <label>1. Fichier CSV & Rafraîchir</label>
-            <div style="display:flex; gap:8px;">
-                <input type="file" id="csvFile" onchange="loadCSV()" style="width:160px;">
-                <button class="big-refresh" id="btnRefresh" onclick="loadCSV()">REFRESH 🔄</button>
+    <div class="ctrl-flex">
+        
+        <div class="field">
+            <label>1. CSV Source</label>
+            <div class="source-group">
+                <input type="file" id="csvFile" onchange="loadCSV()">
+                <button class="btn-refresh" onclick="loadCSV()">REFRESH 🔄</button>
             </div>
         </div>
 
@@ -85,7 +77,7 @@
 
         <div class="field">
             <label>3. Mode</label>
-            <select id="mode" onchange="render()" style="width:150px;">
+            <select id="mode" onchange="render()" style="padding:8px;">
                 <option value="edit">✍️ AJUSTEMENTS</option>
                 <option value="deck" selected>📄 DECKLIST</option>
                 <option value="cat">💰 CATALOGUE</option>
@@ -110,12 +102,7 @@
             </div>
         </div>
 
-        <div class="field">
-            <label>6. Infos Joueur</label>
-            <input type="text" id="p_name" value="BELEREN, Jace" oninput="render()" placeholder="Nom">
-        </div>
-
-        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; border-radius:4px; height:35px; margin-left: auto;">IMPRIMER</button>
+        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; border-radius:4px; height:38px; margin-left:auto;">IMPRIMER</button>
     </div>
 </div>
 
@@ -155,15 +142,10 @@
         }).join('') || '';
     }
 
-    async function loadCSV() {
-        const fileInput = document.getElementById('csvFile');
-        const file = fileInput.files[0];
-        if(!file) { alert("SVP Sélectionnez un fichier CSV"); return; }
+    function loadCSV() {
+        const file = document.getElementById('csvFile').files[0];
+        if(!file) return;
         
-        // Petit effet visuel pour confirmer le refresh
-        const btn = document.getElementById('btnRefresh');
-        btn.innerText = "LOADING...";
-
         Papa.parse(file, {
             header: true, skipEmptyLines: true,
             complete: async (r) => {
@@ -185,7 +167,6 @@
                     }
                     cards.push(c);
                 }
-                btn.innerText = "REFRESH 🔄";
                 updateCounters();
                 render();
             }
@@ -195,7 +176,6 @@
     function render() {
         const out = document.getElementById('view');
         const mode = document.getElementById('mode').value;
-        const pn = document.getElementById('p_name').value;
         out.innerHTML = '';
 
         if(mode === 'edit') {
@@ -216,17 +196,12 @@
             const totalSide = cards.reduce((acc,c)=>acc+c.side,0);
 
             out.innerHTML = `<div class="page">
-                <div class="vert-name">NAME: ${pn}</div>
                 <div class="dl-container">
-                    <div class="dl-main-title">MAGIC: THE GATHERING DECKLIST</div>
-                    <table class="dl-header-table">
-                        <tr><td width="50%"><b>DATE:</b><br>${new Date().toLocaleDateString()}</td><td><b>FORMAT:</b><br>${curFmt}</td></tr>
-                    </table>
-                    <div class="dl-grid-layout">
-                        <div><div class="dl-sect-head">Main Deck:</div>${m.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}</div>
-                        <div>
-                            <div class="dl-sect-head">Lands:</div>${l.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}
-                            <div class="dl-sect-head" style="margin-top:25px;">Sideboard:</div>${s.map(c=>`<div class="c-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('')}
+                    <h2 style="text-align:center">DECKLIST ${curFmt}</h2>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
+                        <div><h3>Main Deck (${totalMain})</h3>${m.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}</div>
+                        <div><h3>Lands</h3>${l.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}
+                             <h3>Sideboard (${totalSide})</h3>${s.map(c=>`<div class="c-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('')}
                         </div>
                     </div>
                 </div>
@@ -240,13 +215,11 @@
                         <img src="${c.img}" class="cat-img">
                         <div class="cat-content">
                             <div>
-                                <div class="cat-title"><span>${c.name}</span> <span>${getManaIcons(c.mana)}</span></div>
-                                <div class="cat-type">${c.type_line}</div>
-                                <div class="cat-oracle">${c.oracle}</div>
+                                <div style="font-weight:bold;">${c.name} ${getManaIcons(c.mana)}</div>
+                                <div style="font-size:7pt; color:var(--gold);">${c.type_line}</div>
                             </div>
                             <div class="price-green">${c.price.toFixed(2)}$</div>
                         </div>
-                        <div class="qty-badge">x${c.main + c.side}</div>
                     </div>`;
                 });
                 out.innerHTML += `<div class="page">${g}</div></div>`;
