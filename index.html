@@ -2,40 +2,44 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v116 - REFRESH TEST</title>
+    <title>Magic Master v117 - Fix STD & Refresh</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; --red: #e74c3c; }
+        :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; --blue: #3498db; }
         body { font-family: 'Arial Narrow', sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
-        /* BARRE DE CONTRÔLE */
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 999; }
-        .ctrl-flex { display: flex; flex-wrap: wrap; gap: 20px; max-width: 1600px; margin: 0 auto; align-items: flex-start; }
+        .ctrl-flex { display: flex; flex-wrap: wrap; gap: 15px; max-width: 1600px; margin: 0 auto; align-items: flex-start; }
         
-        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field { display: flex; flex-direction: column; gap: 4px; }
         label { font-size: 10px; color: var(--gold); font-weight: bold; text-transform: uppercase; }
+        input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; font-size: 11px; }
 
-        /* LE BOUTON REFRESH - IMPOSSIBLE À RATER */
-        .btn-refresh-emergency { 
-            background: var(--red) !important; 
-            color: white !important; 
-            border: 2px solid white !important;
-            padding: 10px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            border-radius: 4px; 
-            text-align: center;
-            box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
-        }
+        /* BOUTON REFRESH BLEU */
+        .btn-refresh { background: var(--blue); color: white; border: none; padding: 8px; font-weight: bold; cursor: pointer; border-radius: 4px; margin-top: 2px; font-size: 10px; text-transform: uppercase; }
+        .btn-refresh:hover { background: white; color: var(--blue); }
 
         .btn-grp { display: flex; gap: 4px; }
-        .btn-opt { padding: 8px 15px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 11px; font-weight: bold; border-radius: 4px; }
-        .btn-opt.active { background: var(--gold); color: black; }
+        .btn-opt { flex: 1; padding: 8px; border: 1px solid #444; background: #333; color: white; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; min-width: 50px; }
+        .btn-opt.active { background: var(--gold); color: black; border-color: white; }
 
-        /* PAGES */
-        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 15mm; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
-        .card-row { border-bottom: 1px solid #eee; padding: 8px; display: flex; align-items: center; }
-        .qty { font-weight: bold; width: 30px; color: var(--gold); }
+        /* GRILLE 16 (4x4) */
+        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 8mm; box-sizing: border-box; page-break-after: always; box-shadow: 0 0 10px rgba(0,0,0,0.2); position: relative; color: #000; }
+        .grid-16 { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 3mm; height: 275mm; }
+        
+        .cat-item { border: 1px solid #ccc; display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
+        .cat-img { width: 100%; height: 35mm; object-fit: contain; background: #f9f9f9; border-bottom: 1px solid #eee; }
+        .cat-content { padding: 5px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .cat-title { font-weight: bold; font-size: 8pt; line-height: 1.1; }
+        .cat-oracle { font-size: 6pt; color: #555; line-height: 1; margin: 3px 0; overflow: hidden; }
+        .price-tag { color: var(--green); font-size: 1.2rem; font-weight: bold; text-align: right; }
+        
+        .qty-badge { position: absolute; top: 2px; right: 2px; background: #000; color: #fff; padding: 1px 4px; border-radius: 3px; font-size: 7pt; font-weight: bold; }
+        .mana-svg { height: 10px; }
+
+        /* DECKLIST VIEW */
+        .dl-row { display: flex; border-bottom: 1px solid #eee; padding: 4px; font-size: 10pt; }
+        .dl-qty { width: 30px; font-weight: bold; color: var(--gold); }
 
         @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; } }
     </style>
@@ -44,32 +48,35 @@
 
 <div id="ui-gate">
     <div class="ctrl-flex">
-        
         <div class="field">
-            <label>1. Source CSV</label>
+            <label>1. Fichier CSV</label>
             <input type="file" id="csvFile" onchange="loadCSV()">
-            <button class="btn-refresh-emergency" onclick="loadCSV()">CLIQUE ICI POUR REFRESH 🔄</button>
+            <button class="btn-refresh" onclick="loadCSV()">Rafraîchir Données 🔄</button>
         </div>
 
         <div class="field">
             <label>2. Format</label>
             <div class="btn-grp">
-                <button class="btn-opt active" id="f-std" onclick="setFmt('STANDARD')">STD</button>
-                <button class="btn-opt" id="f-mod" onclick="setFmt('MODERN')">MOD</button>
-                <button class="btn-opt" id="f-cmd" onclick="setFmt('CMD')">CMD</button>
+                <button class="btn-opt active" id="btn-std" onclick="setFormat('STANDARD')">STD</button>
+                <button class="btn-opt" id="btn-mod" onclick="setFormat('MODERN')">MOD</button>
+                <button class="btn-opt" id="btn-cmd" onclick="setFormat('CMD')">CMD</button>
             </div>
         </div>
 
         <div class="field">
-            <label>3. Mode</label>
-            <select id="mode" onchange="render()" style="padding:8px;">
+            <label>3. Affichage</label>
+            <select id="mode" onchange="render()">
+                <option value="cat">💰 CATALOGUE (4x4)</option>
                 <option value="deck">📄 DECKLIST</option>
-                <option value="edit">✍️ MODIFIER PRIX</option>
             </select>
         </div>
 
-        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; border-radius:4px; margin-left:auto;">IMPRIMER</button>
+        <div class="field">
+            <label>4. Propriétaire</label>
+            <input type="text" id="p_name" value="JACE BELEREN" oninput="render()">
+        </div>
 
+        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; border-radius:4px; margin-left:auto;">IMPRIMER</button>
     </div>
 </div>
 
@@ -77,30 +84,52 @@
 
 <script>
     let cards = [];
-    let currentFmt = 'STANDARD';
+    let currentFormat = 'STANDARD';
 
-    // Correction du bug STD / MOD / CMD
-    function setFmt(f) {
-        currentFmt = f;
+    // FONCTION REPARÉE POUR LES BOUTONS
+    function setFormat(fmt) {
+        currentFormat = fmt;
+        // Met à jour les boutons visuellement
         document.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
-        if(f === 'STANDARD') document.getElementById('f-std').classList.add('active');
-        if(f === 'MODERN') document.getElementById('f-mod').classList.add('active');
-        if(f === 'CMD') document.getElementById('f-cmd').classList.add('active');
+        if(fmt === 'STANDARD') document.getElementById('btn-std').classList.add('active');
+        if(fmt === 'MODERN') document.getElementById('btn-mod').classList.add('active');
+        if(fmt === 'CMD') document.getElementById('btn-cmd').classList.add('active');
+        
+        // RELANCE LE RENDU POUR CHANGER LE TITRE
         render();
     }
 
-    function loadCSV() {
+    function getManaIcons(manaStr) {
+        if (!manaStr) return '';
+        return manaStr.match(/\{([^}]+)\}/g)?.map(s => {
+            let sym = s.replace('{','').replace('}','').replace('/','').toUpperCase();
+            return `<img src="https://svgs.scryfall.io/card-symbols/${sym}.svg" class="mana-svg">`;
+        }).join('') || '';
+    }
+
+    async function loadCSV() {
         const file = document.getElementById('csvFile').files[0];
-        if(!file) { alert("Oublie pas de choisir un fichier !"); return; }
+        if(!file) return;
         
         Papa.parse(file, {
             header: true, skipEmptyLines: true,
-            complete: (r) => {
-                cards = r.data.map(row => ({
-                    name: row["product-name"] || row["Card Name"] || "Inconnu",
-                    price: parseFloat(row["Price (USD)"]) || 0,
-                    qty: parseInt(row["quantity"]) || 1
-                }));
+            complete: async (r) => {
+                cards = [];
+                for (let row of r.data) {
+                    let name = row["product-name"] || row["Card Name"] || "Carte";
+                    let price = (parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0);
+                    let c = { name, price, qty: parseInt(row["quantity"])||1, set: row["Set"]||"", img: "", type: "", oracle: "", mana: "" };
+                    
+                    try {
+                        const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
+                        const d = await res.json();
+                        c.img = d.image_uris?.normal || ""; 
+                        c.type = d.type_line || ""; 
+                        c.oracle = d.oracle_text || "";
+                        c.mana = d.mana_cost || "";
+                    } catch(e) {}
+                    cards.push(c);
+                }
                 render();
             }
         });
@@ -109,22 +138,37 @@
     function render() {
         const out = document.getElementById('view');
         const mode = document.getElementById('mode').value;
+        const pn = document.getElementById('p_name').value;
         out.innerHTML = '';
 
-        let h = `<div class="page"><h2>LISTE ${currentFmt}</h2><hr>`;
-        
-        cards.forEach((c, i) => {
-            if(mode === 'edit') {
-                h += `<div class="card-row">
-                    <span style="flex:1">${c.name}</span>
-                    <input type="number" value="${c.price}" step="0.01" onchange="cards[${i}].price=this.value" style="width:60px">
-                </div>`;
-            } else {
-                h += `<div class="card-row"><span class="qty">${c.qty}</span> ${c.name} - ${c.price}$</div>`;
+        if(mode === 'cat') {
+            for (let i = 0; i < cards.length; i += 16) {
+                let grid = `<div class="grid-16">`;
+                cards.slice(i, i + 16).forEach(c => {
+                    grid += `
+                    <div class="cat-item">
+                        <div class="qty-badge">x${c.qty}</div>
+                        <img src="${c.img}" class="cat-img">
+                        <div class="cat-content">
+                            <div>
+                                <div class="cat-title">${c.name} ${getManaIcons(c.mana)}</div>
+                                <div style="font-size:6pt; color:var(--gold); font-weight:bold;">${c.type}</div>
+                                <div class="cat-oracle">${c.oracle}</div>
+                            </div>
+                            <div class="price-tag">${c.price.toFixed(2)}$</div>
+                        </div>
+                    </div>`;
+                });
+                grid += `</div>`;
+                out.innerHTML += `<div class="page"><div style="font-weight:bold; margin-bottom:10px;">${pn} - CATALOGUE ${currentFormat}</div>${grid}</div>`;
             }
-        });
-
-        out.innerHTML = h + `</div>`;
+        } else {
+            let h = `<div class="page"><h2>DECKLIST ${currentFormat} - ${pn}</h2><hr>`;
+            cards.forEach(c => {
+                h += `<div class="dl-row"><div class="dl-qty">${c.qty}</div><div>${c.name} <small>(${c.set})</small></div></div>`;
+            });
+            out.innerHTML = h + `</div>`;
+        }
     }
 </script>
 </body>
