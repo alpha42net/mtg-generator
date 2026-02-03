@@ -56,6 +56,7 @@
         .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
         .cat-item { border: 1px solid #ddd; display: flex; height: 49mm; position: relative; background: #fff; }
         .mana-svg { height: 16px; margin-left: 3px; vertical-align: middle; }
+        .cmc-badge { background: #eee; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 8pt; font-weight: bold; margin-left: 5px; border: 1px solid #ccc; }
         .price-green { color: var(--green); font-size: 2.2rem; font-weight: 900; margin-top: auto; }
         .cat-img { width: 105px; border-right: 1px solid #eee; object-fit: contain; background: #fafafa; }
 
@@ -106,7 +107,12 @@
     let curEng = 'mtg';
 
     function setFmt(f) { curFmt = f; render(); }
-    function setEng(e) { curEng = e; loadCSV(); }
+    function setEng(e) { 
+        curEng = e; 
+        document.getElementById('m-mtg').classList.toggle('active', e === 'mtg');
+        document.getElementById('m-sport').classList.toggle('active', e === 'sport');
+        loadCSV(); 
+    }
 
     function getManaIcons(manaStr) {
         if (!manaStr || curEng !== 'mtg') return '';
@@ -127,14 +133,22 @@
                 for (let row of r.data) {
                     let name = row["product-name"] || row["Card Name"] || "Carte";
                     let price = (parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0);
-                    let c = { name, price, qty: parseInt(row["quantity"])||1, main: parseInt(row["quantity"])||1, side: 0, set: row["Set"]||"", img: "", mana: "", oracle: "", type: "SPELLS" };
+                    let c = { name, price, qty: parseInt(row["quantity"])||1, main: parseInt(row["quantity"])||1, side: 0, set: row["Set"]||"", img: "", mana: "", cmc: 0, oracle: "", type: "SPELLS" };
                     if(name.length % 2 === 0) counts.STD++; else counts.MOD++;
+                    
                     if(curEng === 'mtg') {
                         try {
                             const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
                             const d = await res.json();
-                            c.img = d.image_uris?.normal; c.mana = d.mana_cost; c.oracle = d.oracle_text;
+                            c.img = d.image_uris?.normal; c.mana = d.mana_cost; c.cmc = d.cmc || 0; c.oracle = d.oracle_text;
                             if(d.type_line?.includes("Land")) c.type = "LANDS";
+                        } catch(e) {}
+                    } else {
+                        // RECHERCHE SPORT / AUTRE
+                        try {
+                            const res = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:"${encodeURIComponent(name)}"`);
+                            const d = await res.json();
+                            if(d.data && d.data[0]) c.img = d.data[0].images.small;
                         } catch(e) {}
                     }
                     cards.push(c);
@@ -233,7 +247,10 @@
                     g += `<div class="cat-item">
                         <img src="${c.img}" class="cat-img">
                         <div style="padding:15px; flex:1; display:flex; flex-direction:column;">
-                            <div style="font-weight:bold; font-size:11pt;">${c.name} ${getManaIcons(c.mana)}</div>
+                            <div style="font-weight:bold; font-size:11pt;">
+                                ${c.name} ${getManaIcons(c.mana)}
+                                ${c.cmc > 0 ? `<span class="cmc-badge">${c.cmc}</span>` : ''}
+                            </div>
                             <div style="font-size:7pt; color:#666; flex-grow:1; margin-top:5px; line-height:1.1;">${c.oracle||''}</div>
                             <div class="price-green">${c.price.toFixed(2)}$</div>
                         </div><div style="position:absolute; bottom:5px; right:5px; background:#000; color:#fff; padding:3px 8px; font-weight:bold;">x${c.qty}</div></div>`;
