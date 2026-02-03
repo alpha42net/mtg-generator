@@ -2,47 +2,42 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Manager v35 - Full Control Edition</title>
+    <title>Manager v37 - Official Tournament Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --gold: #d4af37; --dark: #1a1a1a; --green: #27ae60; --border: #e1e4e8; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; margin: 0; }
-        
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; }
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 4px solid var(--gold); position: sticky; top: 0; z-index: 1000; }
         .nav-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; max-width: 1500px; margin: 0 auto; align-items: end; }
-        
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; max-width: 1600px; margin: 0 auto; align-items: end; }
         button { padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; }
         .btn-mode { background: #333; color: #aaa; }
         .btn-mode.active { background: var(--gold); color: black; }
-        
         label { font-size: 0.6rem; font-weight: bold; color: var(--gold); text-transform: uppercase; display: block; margin-bottom: 4px; }
         input, select { background: #2b2b2b; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; width: 100%; font-size: 0.8rem; }
 
-        /* Catalogue & Decklist UI */
+        /* Catalogue */
         .page { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 10mm; box-sizing: border-box; page-break-after: always; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
         .grid-10 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 4mm; height: 100%; }
         .card-item { border: 1px solid #ddd; border-radius: 6px; display: flex; height: 54mm; overflow: hidden; position: relative; background: #fff; }
-        .card-qty-badge { position: absolute; top: 5px; right: 5px; background: #000; color: #fff; padding: 2px 5px; border-radius: 3px; font-size: 0.7rem; font-weight: bold; z-index: 10; }
-        
+        .card-qty-badge { position: absolute; top: 5px; right: 5px; background: #000; color: #fff; padding: 2px 5px; border-radius: 3px; font-size: 0.7rem; font-weight: bold; }
         .img-container { width: 90px; min-width: 90px; background: #fafafa; display: flex; align-items: center; justify-content: center; border-right: 1px solid #eee; }
         .card-item img { max-height: 95%; max-width: 90%; object-fit: contain; }
         
-        /* Mana Engine */
-        .mana-sphere { display: inline-flex; width: 14px; height: 14px; border-radius: 50%; border: 0.5px solid #333; margin-left: 2px; vertical-align: middle; align-items: center; justify-content: center; font-size: 9px; font-weight: 900; color: white; }
+        .mana-sphere { display: inline-flex; width: 13px; height: 13px; border-radius: 50%; border: 0.5px solid #333; margin-left: 2px; vertical-align: middle; align-items: center; justify-content: center; font-size: 8px; font-weight: 900; color: white; }
         .mana-U { background: #0e68ab; } .mana-W { background: #f8f8f8; color: #333; } .mana-R { background: #d3202a; } .mana-G { background: #00733d; } .mana-B { background: #121212; } .mana-num { background: #ccc; color: #000; }
         
         .card-info { flex: 1; padding: 8px 12px; display: flex; flex-direction: column; min-width: 0; }
         .oracle-text { font-size: 0.6rem; color: #444; line-height: 1.2; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         .card-price { font-size: 1.7rem; font-weight: 900; color: var(--green); margin-top: auto; }
 
-        /* Fenêtre d'ajustement (Tableau) */
-        .editor-container { max-width: 1200px; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { text-align: left; padding: 10px; background: #f8f9fa; border-bottom: 2px solid var(--gold); font-size: 0.7rem; text-transform: uppercase; }
+        /* Tableaux */
+        .editor-container { max-width: 1200px; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px; background: #f8f9fa; border-bottom: 2px solid var(--gold); font-size: 0.7rem; }
         td { padding: 8px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
-        .qty-input { width: 60px; padding: 6px; border: 1px solid #ccc; text-align: center; border-radius: 4px; font-weight: bold; background: #fff; color: #000; }
+        .qty-input { width: 60px; padding: 5px; border: 1px solid #ccc; text-align: center; border-radius: 4px; }
 
         @media print { #ui-gate, .editor-container { display: none !important; } .page { margin: 0; box-shadow: none; width: 100%; } }
     </style>
@@ -54,16 +49,17 @@
         <button id="btn-cat" class="btn-mode active" onclick="switchMode('cat')">💰 Catalogue</button>
         <button id="btn-edit" class="btn-mode" onclick="switchMode('edit')">⚙️ Ajuster Prix/Stock</button>
         <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">🎴 Decklist Builder</button>
-        <button id="btn-cover" class="btn-mode" onclick="switchMode('cover')">🖼️ Couverture</button>
     </div>
     <div class="controls-grid">
-        <div><label>1. Fichier CSV</label><input type="file" id="csvIn" accept=".csv" onchange="processData()"></div>
-        <div><label>2. Trier</label><select id="sortOrder" onchange="applySortAndRender()"><option value="name_asc">A-Z</option><option value="price_desc">Prix $$$</option></select></div>
-        <div><label>3. Format</label><select id="gameFormat" onchange="render()"><option value="standard">Standard (60+15)</option><option value="commander">Commander (100)</option></select></div>
-        <div><label>4. Joueur</label><input type="text" id="playerName" placeholder="Nom"></div>
+        <div><label>Source</label><select id="dataSource"><option value="mtg">MTG</option><option value="sport">Sport</option></select></div>
+        <div><label>Fichier CSV</label><input type="file" id="csvIn" accept=".csv" onchange="processData()"></div>
+        <div><label>Tri</label><select id="sortOrder" onchange="applySortAndRender()"><option value="name_asc">A-Z</option><option value="price_desc">Prix $$$</option></select></div>
+        <div><label>Format</label><select id="gameFormat" onchange="render()"><option value="standard">Standard</option><option value="commander">Commander</option></select></div>
+        <div><label>Joueur</label><input type="text" id="playerName" placeholder="Nom Complet"></div>
+        <div><label>ID / DCI</label><input type="text" id="playerID" placeholder="ID Joueur"></div>
         <div style="display:flex; gap:5px;">
             <button onclick="render()" style="background:#444; color:white; flex:1;">🔄</button>
-            <button onclick="handleExport()" style="background:var(--green); color:white; flex:2;">EXPORT PDF</button>
+            <button onclick="handleExport()" style="background:var(--green); color:white; flex:2;">PDF OFFICIEL</button>
         </div>
     </div>
 </div>
@@ -91,6 +87,7 @@
 
     async function processData() {
         const file = document.getElementById('csvIn').files[0];
+        const source = document.getElementById('dataSource').value;
         if(!file) return;
         cardData = [];
         Papa.parse(file, {
@@ -106,15 +103,16 @@
                         qty: parseInt(row["quantity"]) || 1,
                         main: 0, side: 0, image: "", mana: "", oracle: "", type: ""
                     };
-                    try {
-                        const r = await fetch(`https://api.scryfall.com/card/named?exact=${encodeURIComponent(name)}`);
-                        const d = await r.json();
-                        item.image = d.image_uris ? d.image_uris.normal : "";
-                        item.mana = d.mana_cost || "";
-                        item.oracle = d.oracle_text || "";
-                        item.type = d.type_line || "";
-                        item.set = d.set_name;
-                    } catch(e) {}
+                    if(source === 'mtg') {
+                        try {
+                            const r = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
+                            const d = await r.json();
+                            item.image = d.image_uris?.normal || "";
+                            item.mana = d.mana_cost || "";
+                            item.oracle = d.oracle_text || "";
+                            item.type = d.type_line || "";
+                        } catch(e) {}
+                    }
                     cardData.push(item);
                 }
                 applySortAndRender();
@@ -132,7 +130,7 @@
         const out = document.getElementById('main-content');
         const format = document.getElementById('gameFormat').value;
         out.innerHTML = '';
-        if(cardData.length === 0 && currentMode !== 'cover') return;
+        if(cardData.length === 0) return;
 
         if(currentMode === 'cat') {
             for (let i = 0; i < cardData.length; i += 10) {
@@ -144,27 +142,19 @@
                         <div class="img-container"><img src="${c.image}"></div>
                         <div class="card-info">
                             <div style="font-size:0.55rem; color:#888; display:flex; justify-content:space-between;">
-                                <span>${c.set.toUpperCase()}</span> <span>${formatMana(c.mana)}</span>
+                                <span>${c.set}</span> <span>${formatMana(c.mana)}</span>
                             </div>
-                            <div style="font-weight:700; font-size:0.95rem;">${c.name}</div>
-                            <div class="oracle-text">${c.oracle}</div>
+                            <div style="font-weight:700; font-size:0.9rem;">${c.name}</div>
+                            <div class="oracle-text">${c.oracle || c.type}</div>
                             <div class="card-price">${c.price.toFixed(2)}$</div>
                         </div>
                     </div>`;
                 });
                 p.appendChild(grid); out.appendChild(p);
             }
-        } 
-        else if (currentMode === 'edit' || currentMode === 'deck') {
-            let html = `<div class="editor-container">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h2 style="margin:0;">${currentMode === 'edit' ? 'Fenêtre d\'Ajustement' : 'Decklist Builder'}</h2>
-                    <div style="background:var(--dark); color:var(--gold); padding:8px 15px; border-radius:5px; font-weight:bold;">
-                        ${currentMode === 'deck' ? (cardData.reduce((s,c)=>s+c.main+c.side,0) + ' / 75') : 'Valeur Stock: ' + cardData.reduce((s,c)=>s+(c.price*c.qty),0).toFixed(2) + '$'}
-                    </div>
-                </div>
-                <table><tr><th>Carte</th><th>Série</th>`;
-            html += (currentMode === 'edit') ? `<th>Prix ($)</th><th>En Stock</th>` : `<th>Main</th>${format === 'standard' ? '<th>Side</th>' : ''}`;
+        } else {
+            let html = `<div class="editor-container"><h2>${currentMode === 'edit' ? 'Ajustements' : 'Decklist'}</h2><table><tr><th>Carte</th><th>Série</th>`;
+            html += (currentMode === 'edit') ? `<th>Prix ($)</th><th>Stock</th>` : `<th>Main</th>${format==='standard'?'<th>Side</th>':''}`;
             html += `</tr>`;
             cardData.forEach((c, i) => {
                 html += `<tr><td><b>${c.name}</b></td><td><small>${c.set}</small></td>`;
@@ -173,7 +163,7 @@
                              <td><input type="number" class="qty-input" value="${c.qty}" onchange="cardData[${i}].qty=parseInt(this.value)"></td>`;
                 } else {
                     html += `<td><input type="number" class="qty-input" value="${c.main}" onchange="cardData[${i}].main=parseInt(this.value)"></td>
-                             ${format === 'standard' ? `<td><input type="number" class="qty-input" value="${c.side}" onchange="cardData[${i}].side=parseInt(this.value)"></td>` : ''}`;
+                             ${format==='standard'?`<td><input type="number" class="qty-input" value="${c.side}" onchange="cardData[${i}].side=parseInt(this.value)"></td>`:''}`;
                 }
                 html += `</tr>`;
             });
@@ -182,24 +172,45 @@
     }
 
     function handleExport() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const player = document.getElementById('playerName').value || "JOUEUR";
-        doc.setFontSize(20); doc.text("DECKLIST OFFICIELLE", 105, 20, {align:"center"});
-        doc.setFontSize(10); doc.text(`PLAYER: ${player.toUpperCase()}`, 20, 30);
-        let y = 50;
+        if(currentMode !== 'deck') { window.print(); return; }
+        const { jsPDF } = window.jspdf; const doc = new jsPDF();
+        const name = document.getElementById('playerName').value || "ANONYME";
+        const id = document.getElementById('playerID').value || "N/A";
+        
+        // Header Officiel
+        doc.setFillColor(30, 30, 30); doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.text("DECK REGISTRATION SHEET", 105, 18, {align:"center"});
+        doc.setFontSize(10); doc.text(`PLAYER: ${name.toUpperCase()}`, 20, 30); doc.text(`DCI / PLAYER ID: ${id}`, 140, 30);
+        
+        // Main Deck Section
+        doc.setTextColor(0, 0, 0); doc.setFontSize(14); doc.text("MAIN DECK", 20, 50);
+        doc.setLineWidth(0.5); doc.line(20, 52, 190, 52);
+        
+        let y = 60; let totalMain = 0;
+        doc.setFontSize(10);
         cardData.filter(c => c.main > 0).forEach(c => {
-            doc.text(`${c.main} x ${c.name}`, 20, y);
-            doc.line(20, y+1, 100, y+1);
-            y += 7; if(y > 270) { doc.addPage(); y = 20; }
+            doc.text(`${c.main}`, 20, y); doc.text(c.name.toUpperCase(), 35, y);
+            doc.setFontSize(8); doc.text(c.set, 150, y); doc.setFontSize(10);
+            doc.line(20, y+1, 190, y+1);
+            y += 7; totalMain += c.main;
+            if(y > 200) { doc.addPage(); y = 20; }
         });
-        if(cardData.some(c => c.side > 0)) {
-            y += 10; doc.text("SIDEBOARD", 20, y); y += 10;
-            cardData.filter(c => c.side > 0).forEach(c => {
-                doc.text(`${c.side} x ${c.name}`, 20, y); y += 7;
-            });
-        }
-        doc.save(`Deck_${player}.pdf`);
+        
+        // Sideboard
+        y += 10; doc.setFontSize(14); doc.text("SIDEBOARD", 20, y); y += 10;
+        let totalSide = 0;
+        cardData.filter(c => c.side > 0).forEach(c => {
+            doc.text(`${c.side}`, 20, y); doc.text(c.name.toUpperCase(), 35, y);
+            doc.line(20, y+1, 190, y+1);
+            y += 7; totalSide += c.side;
+        });
+
+        // Footer avec stats
+        doc.rect(130, 250, 60, 30); 
+        doc.text(`TOTAL MAIN: ${totalMain}`, 135, 260);
+        doc.text(`TOTAL SIDE: ${totalSide}`, 135, 270);
+        
+        doc.save(`Official_Decklist_${name}.pdf`);
     }
 </script>
 </body>
