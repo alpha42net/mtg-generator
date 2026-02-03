@@ -33,6 +33,13 @@
         .c-row { display: flex; border-bottom: 1px solid #000; height: 28px; align-items: center; font-size: 10pt; }
         .qty { width: 35px; border-right: 2px solid #000; text-align: center; font-weight: bold; margin-right: 10px; height: 100%; display: flex; align-items: center; justify-content: center; }
 
+        /* FOOTER DECKLIST ADDITION */
+        .dl-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-left: 15mm; margin-top: 40px; }
+        .dl-total-box { border: 2px solid #000; display: flex; }
+        .dl-total-label { background: #eee; padding: 10px; font-weight: bold; border-right: 2px solid #000; }
+        .dl-total-val { padding: 10px 20px; font-weight: bold; font-size: 14pt; }
+        .dl-judge { border: 1px solid #000; width: 250px; height: 60px; display: grid; grid-template-columns: 1fr 1fr; font-size: 7pt; font-weight: bold; }
+
         /* CATALOGUE & VRAIS SYMBOLES SVG */
         .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
         .cat-item { border: 1px solid #ddd; display: flex; height: 49mm; position: relative; background: #fff; }
@@ -40,8 +47,10 @@
         .price-green { color: var(--green); font-size: 2.2rem; font-weight: 900; margin-top: auto; }
         .cat-img { width: 105px; border-right: 1px solid #eee; object-fit: contain; background: #fafafa; }
 
-        /* COUVERTURE */
-        .cover { height: 100%; border: 20px double var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        /* COUVERTURE AVEC CARTES */
+        .cover { height: 100%; border: 20px double var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding-top: 40px; }
+        .cover-cards { display: flex; margin: 40px 0; }
+        .cover-cards img { width: 140px; border-radius: 8px; border: 2px solid var(--gold); margin: 0 -25px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
         @media print { #ui-gate { display: none !important; } .page { margin: 0; } }
     </style>
@@ -155,6 +164,8 @@
             const m = cards.filter(c => c.main > 0 && c.type !== 'LANDS');
             const l = cards.filter(c => c.main > 0 && c.type === 'LANDS');
             const s = cards.filter(c => c.side > 0);
+            const totalMain = cards.reduce((acc,c)=>acc+c.main,0);
+
             out.innerHTML = `<div class="page">
                 <div class="vert-name">NAME: ${pn}</div>
                 <table class="dl-table">
@@ -165,20 +176,39 @@
                 </table>
                 <div class="dl-grid">
                     <div>
-                        <div class="sect-bar"><span>MAIN DECK (SPELLS)</span><span>${cards.reduce((acc,c)=>acc+c.main,0)}</span></div>
+                        <div class="sect-bar"><span>MAIN DECK (SPELLS)</span><span>${totalMain}</span></div>
                         ${m.map(c=>`<div class="c-row"><div class="qty">${c.main}</div>${c.name}</div>`).join('')}
                     </div>
                     <div>
                         <div class="sect-bar"><span>LANDS</span></div>
-                        ${l.map(c=>`<div class="c-row"><div class="qty">${c.main}</div>${c.name}</div>`).join('')}
+                        ${l.map(c=>`<div class="qty">${c.main}</div>${c.name}</div>`).join('')}
                         <div class="sect-bar" style="margin-top:40px;"><span>SIDEBOARD</span><span>${s.reduce((acc,c)=>acc+c.side,0)}</span></div>
                         ${s.map(c=>`<div class="c-row"><div class="qty">${c.side}</div>${c.name}</div>`).join('')}
+                    </div>
+                </div>
+                <div class="dl-footer">
+                    <div class="dl-judge">
+                        <div style="border-right:1px solid #000; padding:4px;">Deck Check / Status:</div>
+                        <div style="padding:4px;">Judge Signature:</div>
+                    </div>
+                    <div class="dl-total-box">
+                        <div class="dl-total-label">TOTAL MAIN DECK:</div>
+                        <div class="dl-total-val">${totalMain}</div>
                     </div>
                 </div>
             </div>`;
         }
         else if(mode === 'cat') {
-            out.innerHTML += `<div class="page"><div class="cover"><h1>CATALOGUE</h1><h2 style="color:var(--gold)">${pn}</h2><hr width="50%"><p>FORMAT: ${curFmt}</p></div></div>`;
+            const topCards = [...cards].sort((a,b) => b.price - a.price).slice(0, 3);
+            out.innerHTML += `<div class="page"><div class="cover">
+                <h1 style="font-size:40pt; margin-bottom:0;">CATALOGUE</h1>
+                <h2 style="color:var(--gold); letter-spacing:10px; margin-top:10px;">OFFICIEL</h2>
+                <div class="cover-cards">${topCards.map(c => `<img src="${c.img}">`).join('')}</div>
+                <hr width="100px" style="border:1px solid #000;">
+                <h2 style="color:var(--gold); font-size:30pt;">${pn}</h2>
+                <p>FORMAT: ${curFmt}</p>
+            </div></div>`;
+            
             for (let i = 0; i < cards.length; i += 10) {
                 let g = `<div class="grid-cat">`;
                 cards.slice(i, i+10).forEach(c => {
