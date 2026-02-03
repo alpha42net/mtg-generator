@@ -2,42 +2,41 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master - Intégrale Fix</title>
+    <title>Magic Master v74 - Full Controls</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --gold: #d4af37; --dark: #111; --green: #27ae60; }
         body { font-family: 'Helvetica', Arial, sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
-        /* HEADER & NAVIGATION */
+        /* NAVIGATION */
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 9999; }
-        
         .nav-tabs { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 15px; }
         .tab-btn { padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; background: #444; color: #ccc; }
         .tab-btn.active { background: var(--gold); color: black; }
 
-        .config-bar { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: flex-end; background: #1a1a1a; padding: 10px; border-radius: 8px; }
+        /* BARRE DE CONFIGURATION COMPLÈTE */
+        .config-bar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: flex-end; padding: 10px; background: #1a1a1a; border-radius: 8px; }
         .field { display: flex; flex-direction: column; }
         label { font-size: 10px; color: var(--gold); font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
-        input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; }
+        input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; font-size: 13px; min-width: 150px; }
 
-        /* DECKLIST FORMAT OFFICIEL */
+        /* DECKLIST OFFICIELLE */
         .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 15mm; box-sizing: border-box; position: relative; color: #000; box-shadow: 0 0 10px rgba(0,0,0,0.1); page-break-after: always; }
         .dl-header { border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .section-bar { background: #000; color: #fff; display: flex; justify-content: space-between; padding: 4px 10px; font-weight: 900; font-size: 11pt; margin-top: 10px; }
-        .card-row { display: flex; border-bottom: 1px solid #ccc; font-size: 10pt; height: 28px; align-items: center; }
-        .qty-box { width: 40px; text-align: center; font-weight: bold; border-right: 2px solid #000; margin-right: 10px; }
-        
-        .signature-box { position: absolute; bottom: 20mm; left: 35%; width: 100mm; border: 3px solid #000; padding: 0; }
-        .sig-head { background: #000; color: #fff; text-align: center; font-weight: bold; font-size: 9pt; padding: 4px; }
-        .sig-row { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px dashed #000; font-weight: bold; }
+        .section-bar { background: #000; color: #fff; display: flex; justify-content: space-between; padding: 5px 12px; font-weight: 900; font-size: 11pt; margin-top: 12px; }
+        .card-row { display: flex; border-bottom: 1px solid #eee; font-size: 10.5pt; height: 30px; align-items: center; }
+        .qty-box { width: 45px; text-align: center; font-weight: bold; border-right: 3px solid #000; margin-right: 12px; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .signature-area { position: absolute; bottom: 20mm; left: 35%; width: 100mm; border: 3px solid #000; }
+        .sig-header { background: #000; color: #fff; text-align: center; font-weight: bold; font-size: 9pt; padding: 5px; }
+        .sig-line { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px dashed #000; font-weight: bold; }
 
         /* CATALOGUE & MANA */
-        .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 4mm; height: 100%; }
-        .cat-card { border: 1px solid #ddd; border-radius: 10px; display: flex; height: 48mm; overflow: hidden; position: relative; }
-        .mana { font-weight: bold; color: #444; margin-left: 8px; }
-        .price { color: var(--green); font-size: 1.8rem; font-weight: 900; margin-top: auto; }
+        .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
+        .card-item { border: 1px solid #ddd; border-radius: 12px; display: flex; height: 48mm; overflow: hidden; position: relative; background: #fff; }
+        .mana-sym { font-weight: bold; color: #333; margin-left: 10px; }
+        .price-text { color: var(--green); font-size: 1.8rem; font-weight: 900; margin-top: auto; }
 
-        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; } }
+        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; width: 100%; } }
     </style>
 </head>
 <body>
@@ -51,15 +50,15 @@
     <div class="config-bar">
         <div class="field"><label>Fichier CSV</label><input type="file" id="csvFile" onchange="loadCSV()"></div>
         <div class="field">
-            <label>Tri / Prix</label>
+            <label>Tri / Prix Recherche</label>
             <select id="sort" onchange="render()">
-                <option value="price">MTG Hockey (Décroissant)</option>
+                <option value="mtg">Prix (MTG Hockey)</option>
                 <option value="name">Nom (A-Z)</option>
             </select>
         </div>
-        <div class="field"><label>Format</label><input type="text" id="fmt" value="Modern / Standard" oninput="render()"></div>
-        <div class="field"><label>Joueur</label><input type="text" id="plyr" value="Vendeur Magic" oninput="render()"></div>
-        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">GÉNÉRER PDF</button>
+        <div class="field"><label>Format Tournoi</label><input type="text" id="fmt" value="Modern / Standard" oninput="render()"></div>
+        <div class="field"><label>Vendeur / Joueur</label><input type="text" id="plyr" value="Vendeur Pro" oninput="render()"></div>
+        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">IMPRIMER PDF</button>
     </div>
 </div>
 
@@ -67,10 +66,10 @@
 
 <script>
     let cards = [];
-    let mode = 'edit';
+    let currentMode = 'edit';
 
     function setMode(m) {
-        mode = m;
+        currentMode = m;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(m)));
         render();
     }
@@ -106,18 +105,19 @@
         const out = document.getElementById('view');
         out.innerHTML = '';
         const sortVal = document.getElementById('sort').value;
+        const playerVal = document.getElementById('plyr').value;
+        const formatVal = document.getElementById('fmt').value;
+        
         cards.sort((a,b) => sortVal === 'name' ? a.name.localeCompare(b.name) : b.price - a.price);
 
-        if(mode === 'edit') {
-            let h = `<div style="max-width:800px; margin:20px auto; background:white; padding:20px; border-radius:8px;"><h2>Répartition Main/Side</h2><table width="100%">`;
+        if(currentMode === 'edit') {
+            let h = `<div style="max-width:800px; margin:20px auto; background:white; padding:20px; border-radius:8px;"><h2>Modifier les quantités</h2><table width="100%">`;
             cards.forEach((c,i) => {
-                h += `<tr><td>${c.name}</td>
-                <td>M: <input type="number" value="${c.main}" onchange="cards[${i}].main=parseInt(this.value)" style="width:40px"></td>
-                <td>S: <input type="number" value="${c.side}" onchange="cards[${i}].side=parseInt(this.value)" style="width:40px"></td></tr>`;
+                h += `<tr><td>${c.name}</td><td>M: <input type="number" value="${c.main}" onchange="cards[${i}].main=parseInt(this.value)" style="width:45px"></td><td>S: <input type="number" value="${c.side}" onchange="cards[${i}].side=parseInt(this.value)" style="width:45px"></td></tr>`;
             });
             out.innerHTML = h + `</table></div>`;
         } 
-        else if(mode === 'deck') {
+        else if(currentMode === 'deck') {
             let tm=0, ts=0;
             const drawSec = (t) => {
                 const list = cards.filter(c => c.main > 0 && c.type === t);
@@ -130,24 +130,24 @@
             side.forEach(c => ts += c.side);
 
             out.innerHTML = `<div class="page">
-                <div class="dl-header"><div><h1 style="margin:0">DECKLIST OFFICIELLE</h1><span>Format: ${document.getElementById('fmt').value}</span></div><div>JOUEUR: ${document.getElementById('plyr').value}</div></div>
+                <div class="dl-header"><div><h1 style="margin:0">DECKLIST OFFICIELLE</h1><span>Format: ${formatVal}</span></div><div style="text-align:right">JOUEUR: ${playerVal}</div></div>
                 ${drawSec('CREATURES')}${drawSec('SPELLS')}${drawSec('LANDS')}
                 <div class="section-bar"><span>SIDEBOARD</span><span>${ts}</span></div>
-                ${side.length ? side.map(c => `<div class="card-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('') : '<div style="padding:10px; color:#999">Aucune carte en réserve</div>'}
-                <div class="signature-box"><div class="sig-head">OFFICIAL USE ONLY</div><div class="sig-row"><span>Total Main Deck:</span><span>${tm}</span></div><div class="sig-row"><span>Total Sideboard:</span><span>${ts}</span></div><div class="sig-row" style="border:none"><span>Signature Juge:</span><span>___________</span></div></div>
+                ${side.length ? side.map(c => `<div class="card-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('') : '<div style="padding:10px">Aucun sideboard</div>'}
+                <div class="signature-area"><div class="sig-header">OFFICIAL USE ONLY</div><div class="sig-line"><span>Total Main Deck:</span><span>${tm}</span></div><div class="sig-line"><span>Total Sideboard:</span><span>${ts}</span></div><div class="sig-line" style="border:none"><span>Signature Juge:</span><span>___________</span></div></div>
             </div>`;
         }
-        else if(mode === 'cat') {
+        else if(currentMode === 'cat') {
             for (let i = 0; i < cards.length; i += 10) {
                 let g = `<div class="grid-cat">`;
                 cards.slice(i, i+10).forEach(c => {
-                    g += `<div class="cat-card">
+                    g += `<div class="card-item">
                         <div style="width:90px; border-right:1px solid #eee; padding:5px;"><img src="${c.img}" style="max-width:100%"></div>
-                        <div style="flex:1; padding:10px; display:flex; flex-direction:column;">
-                            <div style="font-size:0.6rem; color:#888;">${c.set}</div>
-                            <div style="font-weight:bold;">${c.name} <span class="mana">${c.mana}</span></div>
-                            <div style="font-size:0.7rem; color:#444; flex-grow:1; margin-top:5px;">${c.oracle}</div>
-                            <div class="price">${c.price.toFixed(2)}$</div>
+                        <div style="flex:1; padding:12px; display:flex; flex-direction:column;">
+                            <div style="font-size:0.6rem; color:#888;">SÉRIE</div>
+                            <div style="font-weight:bold;">${c.name} <span class="mana-sym">${c.mana}</span></div>
+                            <div style="font-size:0.7rem; color:#444; flex-grow:1; margin-top:5px; overflow:hidden;">${c.oracle}</div>
+                            <div class="price-text">${c.price.toFixed(2)}$</div>
                         </div><div style="position:absolute; top:5px; right:5px; background:#000; color:#fff; padding:2px 6px; border-radius:4px; font-weight:bold;">x${c.qty}</div></div>`;
                 });
                 out.innerHTML += `<div class="page">${g}</div></div>`;
