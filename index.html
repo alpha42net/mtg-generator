@@ -8,7 +8,7 @@
         :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; }
         body { font-family: 'Arial Narrow', sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
-        /* BARRE DE CONTRÔLE DÉBLOQUÉE */
+        /* BARRE DE CONTRÔLE */
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 999; }
         .ctrl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; max-width: 1400px; margin: 0 auto; }
         .field { display: flex; flex-direction: column; gap: 4px; }
@@ -20,39 +20,47 @@
         .btn-opt.active { background: var(--gold); color: black; }
         .count { display: block; font-size: 9px; opacity: 0.8; }
 
-        /* DECKLIST CLONE DU PDF */
-        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 10mm; box-sizing: border-box; position: relative; color: #000; page-break-after: always; }
-        .vert-name { position: absolute; left: 5mm; top: 70mm; transform: rotate(-90deg); transform-origin: left top; font-size: 18pt; font-weight: bold; width: 200mm; text-transform: uppercase; }
+        /* PAGES */
+        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 15mm; box-sizing: border-box; position: relative; color: #000; page-break-after: always; }
         
-        .dl-table { width: calc(100% - 15mm); margin-left: 15mm; border: 2px solid #000; border-collapse: collapse; }
-        .dl-table td { border: 1px solid #000; padding: 6px; font-size: 10pt; height: 25px; }
-        .lb { background: #eee; font-weight: bold; font-size: 8pt; width: 100px; }
+        /* DECKLIST STRUCTURE (CLONE IMAGE 2) */
+        .dl-container { margin-left: 15mm; width: calc(100% - 15mm); }
+        .dl-main-title { font-size: 18pt; font-weight: bold; text-align: center; margin-bottom: 15px; text-transform: uppercase; }
+        
+        .dl-header-table { width: 100%; border: 1.5px solid #000; border-collapse: collapse; margin-bottom: 20px; }
+        .dl-header-table td { border: 1px solid #000; padding: 5px; font-size: 8pt; vertical-align: top; }
+        .dl-header-table b { font-size: 7pt; text-transform: uppercase; }
 
-        .dl-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; margin-left: 15mm; margin-top: 15px; }
-        .sect-bar { background: #000; color: #fff; padding: 5px 10px; font-weight: bold; font-size: 11pt; display: flex; justify-content: space-between; }
-        .c-row { display: flex; border-bottom: 1px solid #000; height: 28px; align-items: center; font-size: 10pt; }
-        .qty { width: 35px; border-right: 2px solid #000; text-align: center; font-weight: bold; margin-right: 10px; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .dl-grid-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; }
+        .dl-sect-head { font-weight: bold; font-size: 10pt; border-bottom: 1.5px solid #000; padding-bottom: 3px; margin-bottom: 5px; margin-top: 10px; }
+        
+        .c-row { display: flex; border-bottom: 1px solid #ccc; height: 22px; align-items: center; font-size: 9pt; }
+        .qty-box { width: 30px; border-right: 1.5px solid #000; text-align: center; font-weight: bold; margin-right: 8px; height: 100%; display: flex; align-items: center; justify-content: center; }
 
-        /* FOOTER DECKLIST ADDITION */
-        .dl-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-left: 15mm; margin-top: 40px; }
-        .dl-total-box { border: 2px solid #000; display: flex; }
-        .dl-total-label { background: #eee; padding: 10px; font-weight: bold; border-right: 2px solid #000; }
-        .dl-total-val { padding: 10px 20px; font-weight: bold; font-size: 14pt; }
-        .dl-judge { border: 1px solid #000; width: 250px; height: 60px; display: grid; grid-template-columns: 1fr 1fr; font-size: 7pt; font-weight: bold; }
+        /* FOOTER DECKLIST */
+        .dl-footer-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 50px; }
+        .total-deck-box { border: 1.5px solid #000; display: flex; width: 250px; }
+        .total-label { background: #fff; padding: 10px; font-weight: bold; border-right: 1.5px solid #000; flex: 1; font-size: 8pt; }
+        .total-num { width: 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14pt; }
+        
+        .judge-box { border: 1.5px solid #000; width: 300px; display: flex; flex-direction: column; }
+        .judge-top { background: #fff; text-align: center; font-weight: bold; font-size: 7pt; border-bottom: 1.5px solid #000; padding: 3px; }
+        .judge-bottom { display: grid; grid-template-columns: 1fr 1fr; height: 60px; font-size: 7pt; }
+        
+        .vert-name { position: absolute; left: 5mm; top: 120mm; transform: rotate(-90deg); transform-origin: left top; font-size: 14pt; font-weight: bold; width: 300px; text-transform: uppercase; border: 1px solid #000; padding: 5px; text-align: center;}
 
-        /* CATALOGUE & VRAIS SYMBOLES SVG */
+        /* CATALOGUE & COUVERTURE */
+        .cover { height: 100%; border: 20px double var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .cover-cards { display: flex; gap: -20px; margin: 30px 0; }
+        .cover-cards img { width: 130px; border: 2px solid var(--gold); border-radius: 8px; margin: 0 -25px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+
         .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
         .cat-item { border: 1px solid #ddd; display: flex; height: 49mm; position: relative; background: #fff; }
         .mana-svg { height: 16px; margin-left: 3px; vertical-align: middle; }
         .price-green { color: var(--green); font-size: 2.2rem; font-weight: 900; margin-top: auto; }
         .cat-img { width: 105px; border-right: 1px solid #eee; object-fit: contain; background: #fafafa; }
 
-        /* COUVERTURE AVEC CARTES */
-        .cover { height: 100%; border: 20px double var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding-top: 40px; }
-        .cover-cards { display: flex; margin: 40px 0; }
-        .cover-cards img { width: 140px; border-radius: 8px; border: 2px solid var(--gold); margin: 0 -25px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-
-        @media print { #ui-gate { display: none !important; } .page { margin: 0; } }
+        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; } }
     </style>
 </head>
 <body>
@@ -166,34 +174,52 @@
             const s = cards.filter(c => c.side > 0);
             const totalMain = cards.reduce((acc,c)=>acc+c.main,0);
 
-            out.innerHTML = `<div class="page">
+            out.innerHTML = `
+            <div class="page">
                 <div class="vert-name">NAME: ${pn}</div>
-                <table class="dl-table">
-                    <tr><td class="lb">MAGIC: THE GATHERING</td><td colspan="2" style="font-weight:900; font-size:16pt;">DECKLIST OFFICIELLE</td></tr>
-                    <tr><td class="lb">DATE:</td><td>${new Date().toLocaleDateString()}</td><td class="lb">EVENT:</td></tr>
-                    <tr><td colspan="2">${pe}</td><td rowspan="2" class="lb">FORMAT:<br><span style="font-size:14pt;">${curFmt}</span></td></tr>
-                    <tr><td class="lb">LOCATION:</td><td>LONGUEUIL, QC</td></tr>
-                </table>
-                <div class="dl-grid">
-                    <div>
-                        <div class="sect-bar"><span>MAIN DECK (SPELLS)</span><span>${totalMain}</span></div>
-                        ${m.map(c=>`<div class="c-row"><div class="qty">${c.main}</div>${c.name}</div>`).join('')}
+                <div class="dl-container">
+                    <div class="dl-main-title">MAGIC: THE GATHERING DECKLIST</div>
+                    
+                    <table class="dl-header-table">
+                        <tr>
+                            <td width="50%"><b>DATE:</b><br>${new Date().toLocaleDateString()}</td>
+                            <td><b>LOCATION:</b><br>LONGUEUIL, QC</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><b>EVENT:</b><br>${pe}</td>
+                        </tr>
+                        <tr>
+                            <td><b>DECK NAME:</b></td>
+                            <td><b>FORMAT:</b><br>${curFmt}</td>
+                        </tr>
+                    </table>
+
+                    <div class="dl-grid-layout">
+                        <div>
+                            <div class="dl-sect-head">Main Deck (Spells):</div>
+                            ${m.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}
+                        </div>
+                        <div>
+                            <div class="dl-sect-head">Lands:</div>
+                            ${l.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}
+                            
+                            <div class="dl-sect-head" style="margin-top:30px;">Sideboard:</div>
+                            ${s.map(c=>`<div class="c-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('')}
+                        </div>
                     </div>
-                    <div>
-                        <div class="sect-bar"><span>LANDS</span></div>
-                        ${l.map(c=>`<div class="qty">${c.main}</div>${c.name}</div>`).join('')}
-                        <div class="sect-bar" style="margin-top:40px;"><span>SIDEBOARD</span><span>${s.reduce((acc,c)=>acc+c.side,0)}</span></div>
-                        ${s.map(c=>`<div class="c-row"><div class="qty">${c.side}</div>${c.name}</div>`).join('')}
-                    </div>
-                </div>
-                <div class="dl-footer">
-                    <div class="dl-judge">
-                        <div style="border-right:1px solid #000; padding:4px;">Deck Check / Status:</div>
-                        <div style="padding:4px;">Judge Signature:</div>
-                    </div>
-                    <div class="dl-total-box">
-                        <div class="dl-total-label">TOTAL MAIN DECK:</div>
-                        <div class="dl-total-val">${totalMain}</div>
+
+                    <div class="dl-footer-flex">
+                        <div class="total-deck-box">
+                            <div class="total-label">TOTAL MAIN DECK:</div>
+                            <div class="total-num">${totalMain}</div>
+                        </div>
+                        <div class="judge-box">
+                            <div class="judge-top">FOR OFFICIAL USE ONLY</div>
+                            <div class="judge-bottom">
+                                <div style="border-right:1px solid #000; padding:3px;">Deck Check / Status:</div>
+                                <div style="padding:3px;">Judge Signature:</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>`;
@@ -201,12 +227,12 @@
         else if(mode === 'cat') {
             const topCards = [...cards].sort((a,b) => b.price - a.price).slice(0, 3);
             out.innerHTML += `<div class="page"><div class="cover">
-                <h1 style="font-size:40pt; margin-bottom:0;">CATALOGUE</h1>
-                <h2 style="color:var(--gold); letter-spacing:10px; margin-top:10px;">OFFICIEL</h2>
+                <h1 style="font-size:38pt; margin:0;">CATALOGUE</h1>
+                <h2 style="color:var(--gold); letter-spacing:8px; margin:5px 0 20px 0;">OFFICIEL</h2>
                 <div class="cover-cards">${topCards.map(c => `<img src="${c.img}">`).join('')}</div>
-                <hr width="100px" style="border:1px solid #000;">
-                <h2 style="color:var(--gold); font-size:30pt;">${pn}</h2>
-                <p>FORMAT: ${curFmt}</p>
+                <hr width="120px" style="border:1px solid #000; margin:20px 0;">
+                <h2 style="color:var(--gold); font-size:28pt; margin:0;">${pn}</h2>
+                <p style="font-weight:bold; margin-top:10px;">FORMAT: ${curFmt}</p>
             </div></div>`;
             
             for (let i = 0; i < cards.length; i += 10) {
@@ -215,8 +241,8 @@
                     g += `<div class="cat-item">
                         <img src="${c.img}" class="cat-img">
                         <div style="padding:15px; flex:1; display:flex; flex-direction:column;">
-                            <div style="font-weight:bold; font-size:12pt;">${c.name} ${getManaIcons(c.mana)}</div>
-                            <div style="font-size:7pt; color:#666; flex-grow:1; margin-top:5px;">${c.oracle||''}</div>
+                            <div style="font-weight:bold; font-size:11pt;">${c.name} ${getManaIcons(c.mana)}</div>
+                            <div style="font-size:7pt; color:#666; flex-grow:1; margin-top:5px; line-height:1.1;">${c.oracle||''}</div>
                             <div class="price-green">${c.price.toFixed(2)}$</div>
                         </div><div style="position:absolute; bottom:5px; right:5px; background:#000; color:#fff; padding:3px 8px; font-weight:bold;">x${c.qty}</div></div>`;
                 });
