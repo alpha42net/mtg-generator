@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v104 - Fix Final</title>
+    <title>Magic Master v104 - Tri Final</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; }
@@ -10,7 +10,7 @@
         
         /* BARRE DE CONTRÔLE */
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 999; }
-        .ctrl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; max-width: 1600px; margin: 0 auto; }
+        .ctrl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; max-width: 1700px; margin: 0 auto; }
         .field { display: flex; flex-direction: column; gap: 4px; }
         label { font-size: 10px; color: var(--gold); font-weight: bold; text-transform: uppercase; }
         input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; font-size: 13px; }
@@ -26,33 +26,26 @@
         /* DECKLIST STRUCTURE */
         .dl-container { margin-left: 15mm; width: calc(100% - 15mm); }
         .dl-main-title { font-size: 18pt; font-weight: bold; text-align: center; margin-bottom: 15px; text-transform: uppercase; }
-        
         .dl-header-table { width: 100%; border: 1.5px solid #000; border-collapse: collapse; margin-bottom: 20px; }
         .dl-header-table td { border: 1px solid #000; padding: 5px; font-size: 8pt; vertical-align: top; height: 35px; }
         .dl-header-table b { font-size: 7pt; text-transform: uppercase; }
-
         .dl-grid-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; }
         .dl-sect-head { font-weight: bold; font-size: 10pt; border-bottom: 1.5px solid #000; padding-bottom: 3px; margin-bottom: 5px; margin-top: 10px; }
-        
         .c-row { display: flex; border-bottom: 1px solid #ccc; height: 22px; align-items: center; font-size: 9pt; }
         .qty-box { width: 30px; border-right: 1.5px solid #000; text-align: center; font-weight: bold; margin-right: 8px; height: 100%; display: flex; align-items: center; justify-content: center; }
-
         .dl-footer-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 50px; }
         .total-deck-box { border: 1.5px solid #000; display: flex; width: 250px; }
         .total-label { background: #fff; padding: 10px; font-weight: bold; border-right: 1.5px solid #000; flex: 1; font-size: 8pt; }
         .total-num { width: 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14pt; }
-        
         .judge-box { border: 1.5px solid #000; width: 300px; display: flex; flex-direction: column; }
         .judge-top { background: #fff; text-align: center; font-weight: bold; font-size: 7pt; border-bottom: 1.5px solid #000; padding: 3px; }
         .judge-bottom { display: grid; grid-template-columns: 1fr 1fr; height: 60px; font-size: 7pt; }
-        
         .vert-name { position: absolute; left: 5mm; top: 120mm; transform: rotate(-90deg); transform-origin: left top; font-size: 14pt; font-weight: bold; width: 300px; text-transform: uppercase; border: 1px solid #000; padding: 5px; text-align: center;}
 
         /* CATALOGUE */
         .cover { height: 100%; border: 20px double var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .cover-cards { display: flex; margin: 30px 0; }
         .cover-cards img { width: 130px; border: 2px solid var(--gold); border-radius: 8px; margin: 0 -25px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
-
         .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
         .cat-item { border: 1px solid #ddd; display: flex; height: 49mm; position: relative; background: #fff; }
         .mana-svg { height: 16px; margin-left: 3px; vertical-align: middle; }
@@ -73,6 +66,14 @@
                 <option value="edit">✍️ AJUSTER QTÉ/PRIX</option>
                 <option value="deck">📄 DECKLIST OFFICIELLE</option>
                 <option value="cat">💰 CATALOGUE & COUVERTURE</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Tri Catalogue</label>
+            <select id="sortMode" onchange="render()">
+                <option value="price">💰 Prix (Décroissant)</option>
+                <option value="alpha">🔤 Alphabétique</option>
+                <option value="edition">📦 Édition / Set</option>
             </select>
         </div>
         <div class="field">
@@ -127,7 +128,7 @@
                 for (let row of r.data) {
                     let name = row["product-name"] || row["Card Name"] || "Carte";
                     let price = (parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0);
-                    let c = { name, price, qty: parseInt(row["quantity"])||1, main: parseInt(row["quantity"])||1, side: 0, set: row["Set"]||"", img: "", mana: "", oracle: "", type: "SPELLS" };
+                    let c = { name, price, qty: parseInt(row["quantity"])||1, main: parseInt(row["quantity"])||1, side: 0, set: row["Set"] || row["edition"] || "N/A", img: "", mana: "", oracle: "", type: "SPELLS" };
                     if(name.length % 2 === 0) counts.STD++; else counts.MOD++;
                     if(curEng === 'mtg') {
                         try {
@@ -149,6 +150,7 @@
     function render() {
         const out = document.getElementById('view');
         const mode = document.getElementById('mode').value;
+        const sortMode = document.getElementById('sortMode').value;
         const pn = document.getElementById('p_name').value;
         const pc = document.getElementById('p_city').value;
         const pe = document.getElementById('p_event').value;
@@ -170,54 +172,34 @@
             const l = cards.filter(c => c.main > 0 && c.type === 'LANDS');
             const s = cards.filter(c => c.side > 0);
             const totalMain = cards.reduce((acc,c)=>acc+c.main,0);
-
             out.innerHTML = `
             <div class="page">
                 <div class="vert-name">NAME: ${pn}</div>
                 <div class="dl-container">
                     <div class="dl-main-title">MAGIC: THE GATHERING DECKLIST</div>
                     <table class="dl-header-table">
-                        <tr>
-                            <td width="50%"><b>DATE:</b><br>${new Date().toLocaleDateString()}</td>
-                            <td><b>LOCATION / CITY:</b><br>${pc}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2"><b>EVENT:</b><br>${pe}</td>
-                        </tr>
-                        <tr>
-                            <td><b>DECK NAME:</b><br>${pd}</td>
-                            <td><b>FORMAT:</b><br>${curFmt}</td>
-                        </tr>
+                        <tr><td width="50%"><b>DATE:</b><br>${new Date().toLocaleDateString()}</td><td><b>LOCATION / CITY:</b><br>${pc}</td></tr>
+                        <tr><td colspan="2"><b>EVENT:</b><br>${pe}</td></tr>
+                        <tr><td><b>DECK NAME:</b><br>${pd}</td><td><b>FORMAT:</b><br>${curFmt}</td></tr>
                     </table>
                     <div class="dl-grid-layout">
-                        <div>
-                            <div class="dl-sect-head">Main Deck (Spells):</div>
-                            ${m.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}
-                        </div>
-                        <div>
-                            <div class="dl-sect-head">Lands:</div>
-                            ${l.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}
-                            <div class="dl-sect-head" style="margin-top:30px;">Sideboard:</div>
-                            ${s.map(c=>`<div class="c-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('')}
-                        </div>
+                        <div><div class="dl-sect-head">Main Deck (Spells):</div>${m.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}</div>
+                        <div><div class="dl-sect-head">Lands:</div>${l.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}<div class="dl-sect-head" style="margin-top:30px;">Sideboard:</div>${s.map(c=>`<div class="c-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('')}</div>
                     </div>
                     <div class="dl-footer-flex">
-                        <div class="total-deck-box">
-                            <div class="total-label">TOTAL MAIN DECK:</div>
-                            <div class="total-num">${totalMain}</div>
-                        </div>
-                        <div class="judge-box">
-                            <div class="judge-top">FOR OFFICIAL USE ONLY</div>
-                            <div class="judge-bottom">
-                                <div style="border-right:1px solid #000; padding:3px;">Deck Check / Status:</div>
-                                <div style="padding:3px;">Judge Signature:</div>
-                            </div>
-                        </div>
+                        <div class="total-deck-box"><div class="total-label">TOTAL MAIN DECK:</div><div class="total-num">${totalMain}</div></div>
+                        <div class="judge-box"><div class="judge-top">FOR OFFICIAL USE ONLY</div><div class="judge-bottom"><div style="border-right:1px solid #000; padding:3px;">Deck Check / Status:</div><div style="padding:3px;">Judge Signature:</div></div></div>
                     </div>
                 </div>
             </div>`;
         }
         else if(mode === 'cat') {
+            // TRI DES CARTES
+            let sortedCards = [...cards];
+            if(sortMode === 'price') sortedCards.sort((a,b) => b.price - a.price);
+            else if(sortMode === 'alpha') sortedCards.sort((a,b) => a.name.localeCompare(b.name));
+            else if(sortMode === 'edition') sortedCards.sort((a,b) => a.set.localeCompare(b.set));
+
             const topCards = [...cards].sort((a,b) => b.price - a.price).slice(0, 3);
             out.innerHTML += `<div class="page"><div class="cover">
                 <h1 style="font-size:38pt; margin:0;">CATALOGUE</h1>
@@ -227,14 +209,15 @@
                 <h2 style="color:var(--gold); font-size:28pt; margin:0;">${pn}</h2>
                 <p style="font-weight:bold; margin-top:10px;">FORMAT: ${curFmt}</p>
             </div></div>`;
-            for (let i = 0; i < cards.length; i += 10) {
+            for (let i = 0; i < sortedCards.length; i += 10) {
                 let g = `<div class="grid-cat">`;
-                cards.slice(i, i+10).forEach(c => {
+                sortedCards.slice(i, i+10).forEach(c => {
                     g += `<div class="cat-item">
                         <img src="${c.img}" class="cat-img">
                         <div style="padding:15px; flex:1; display:flex; flex-direction:column;">
                             <div style="font-weight:bold; font-size:11pt;">${c.name} ${getManaIcons(c.mana)}</div>
                             <div style="font-size:7pt; color:#666; flex-grow:1; margin-top:5px; line-height:1.1;">${c.oracle||''}</div>
+                            <div style="font-size:7pt; color:var(--gold); margin-bottom:5px;">Set: ${c.set}</div>
                             <div class="price-green">${c.price.toFixed(2)}$</div>
                         </div><div style="position:absolute; bottom:5px; right:5px; background:#000; color:#fff; padding:3px 8px; font-weight:bold;">x${c.qty}</div></div>`;
                 });
