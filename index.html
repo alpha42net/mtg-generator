@@ -37,7 +37,7 @@
         .c-row { display: flex; border-bottom: 1px solid #ccc; height: 22px; align-items: center; font-size: 9pt; }
         .qty-box { width: 30px; border-right: 1.5px solid #000; text-align: center; font-weight: bold; margin-right: 8px; height: 100%; display: flex; align-items: center; justify-content: center; }
 
-        /* FOOTER REORGANISÉ */
+        /* FOOTER ALIGNÉ */
         .dl-footer-flex { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 40px; }
         .total-deck-box { border: 1.5px solid #000; display: flex; width: 240px; height: 35px; margin-bottom: 10px; }
         .total-label { background: #fff; padding: 8px; font-weight: bold; border-right: 1.5px solid #000; flex: 1; font-size: 7pt; display: flex; align-items: center; }
@@ -50,7 +50,11 @@
         
         .vert-name { position: absolute; left: 5mm; top: 120mm; transform: rotate(-90deg); transform-origin: left top; font-size: 14pt; font-weight: bold; width: 300px; text-transform: uppercase; border: 1px solid #000; padding: 5px; text-align: center;}
 
-        /* CATALOGUE */
+        /* CATALOGUE & COUVERTURE */
+        .cover { height: 100%; border: 20px double var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .cover-cards { display: flex; margin: 30px 0; }
+        .cover-cards img { width: 130px; border: 2px solid var(--gold); border-radius: 8px; margin: 0 -25px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+
         .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
         .cat-item { border: 1px solid #ddd; display: flex; height: 49mm; position: relative; background: #fff; }
         .cat-img { width: 105px; border-right: 1px solid #eee; object-fit: contain; background: #fafafa; }
@@ -75,6 +79,13 @@
             </select>
         </div>
         <div class="field">
+            <label>Moteur</label>
+            <div class="btn-grp">
+                <button class="btn-opt active" id="m-mtg" onclick="setEng('mtg')">MTG</button>
+                <button class="btn-opt" id="m-sport" onclick="setEng('sport')">SPORT</button>
+            </div>
+        </div>
+        <div class="field">
             <label>Tri Catalogue</label>
             <div class="btn-grp">
                 <button class="btn-opt" onclick="cards.sort((a,b)=>b.price-a.price);render()">$$</button>
@@ -82,18 +93,8 @@
                 <button class="btn-opt" onclick="cards.sort((a,b)=>a.set.localeCompare(b.set));render()">SET</button>
             </div>
         </div>
-        <div class="field">
-            <label>Format</label>
-            <div class="btn-grp">
-                <button class="btn-opt active" id="f-std" onclick="setFmt('STANDARD')">STD <span class="count" id="c-std">0</span></button>
-                <button class="btn-opt" id="f-mod" onclick="setFmt('MODERN')">MOD <span class="count" id="c-mod">0</span></button>
-                <button class="btn-opt" id="f-cmd" onclick="setFmt('CMD')">CMD <span class="count" id="c-cmd">0</span></button>
-            </div>
-        </div>
         <div class="field"><label>Joueur</label><input type="text" id="p_name" value="BELEREN, Jace" oninput="render()"></div>
         <div class="field"><label>Ville</label><input type="text" id="p_city" value="LONGUEUIL, QC" oninput="render()"></div>
-        <div class="field"><label>Événement</label><input type="text" id="p_event" placeholder="Nom Tournoi" oninput="render()"></div>
-        <div class="field"><label>Deck Name</label><input type="text" id="p_deckname" placeholder="Nom du Deck" oninput="render()"></div>
         <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px; font-weight:bold; cursor:pointer; border-radius:4px; margin-top:14px;">IMPRIMER</button>
     </div>
 </div>
@@ -105,7 +106,12 @@
     let curFmt = 'STANDARD';
     let curEng = 'mtg';
 
-    function setFmt(f) { curFmt = f; render(); }
+    function setEng(e) { 
+        curEng = e; 
+        document.getElementById('m-mtg').classList.toggle('active', e==='mtg');
+        document.getElementById('m-sport').classList.toggle('active', e==='sport');
+        loadCSV(); 
+    }
 
     function getManaIcons(manaStr) {
         if (!manaStr || curEng !== 'mtg') return '';
@@ -122,23 +128,20 @@
             header: true, skipEmptyLines: true,
             complete: async (r) => {
                 cards = [];
-                let counts = { STD: 0, MOD: 0, CMD: 0 };
                 for (let row of r.data) {
                     let name = row["product-name"] || row["Card Name"] || "Carte";
                     let price = (parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0);
-                    let c = { name, price, qty: parseInt(row["quantity"])||1, main: parseInt(row["quantity"])||1, side: 0, set: row["Set"]||"", img: "", mana: "", oracle: "", type_line: "", type: "SPELLS" };
-                    if(name.length % 2 === 0) counts.STD++; else counts.MOD++;
-                    try {
-                        const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
-                        const d = await res.json();
-                        c.img = d.image_uris?.normal; c.mana = d.mana_cost; c.oracle = d.oracle_text;
-                        c.type_line = d.type_line; c.set = d.set_name;
-                        if(d.type_line?.includes("Land")) c.type = "LANDS";
-                    } catch(e) {}
+                    let c = { name, price, qty: parseInt(row["quantity"])||1, main: parseInt(row["quantity"])||1, side: 0, set: row["Set"]||"", img: "", mana: "", oracle: "", type_line: "" };
+                    if(curEng === 'mtg') {
+                        try {
+                            const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
+                            const d = await res.json();
+                            c.img = d.image_uris?.normal; c.mana = d.mana_cost; c.oracle = d.oracle_text;
+                            c.type_line = d.type_line; c.set = d.set_name;
+                        } catch(e) {}
+                    }
                     cards.push(c);
                 }
-                document.getElementById('c-std').innerText = counts.STD;
-                document.getElementById('c-mod').innerText = counts.MOD;
                 render();
             }
         });
@@ -149,8 +152,6 @@
         const mode = document.getElementById('mode').value;
         const pn = document.getElementById('p_name').value;
         const pc = document.getElementById('p_city').value;
-        const pe = document.getElementById('p_event').value;
-        const pd = document.getElementById('p_deckname').value;
         out.innerHTML = '';
 
         if(mode === 'edit') {
@@ -164,24 +165,21 @@
             out.innerHTML = h + `</div>`;
         } 
         else if(mode === 'deck') {
-            const m = cards.filter(c => c.main > 0 && c.type !== 'LANDS');
-            const l = cards.filter(c => c.main > 0 && c.type === 'LANDS');
+            const m = cards.filter(c => c.main > 0 && !(c.type_line && c.type_line.includes("Land")));
+            const l = cards.filter(c => c.main > 0 && (c.type_line && c.type_line.includes("Land")));
             const s = cards.filter(c => c.side > 0);
             const totalMain = cards.reduce((acc,c)=>acc+c.main,0);
             const totalSide = cards.reduce((acc,c)=>acc+c.side,0);
 
-            out.innerHTML = `
-            <div class="page">
+            out.innerHTML = `<div class="page">
                 <div class="vert-name">NAME: ${pn}</div>
                 <div class="dl-container">
                     <div class="dl-main-title">MAGIC: THE GATHERING DECKLIST</div>
                     <table class="dl-header-table">
-                        <tr><td width="50%"><b>DATE:</b><br>${new Date().toLocaleDateString()}</td><td><b>LOCATION / CITY:</b><br>${pc}</td></tr>
-                        <tr><td colspan="2"><b>EVENT:</b><br>${pe}</td></tr>
-                        <tr><td><b>DECK NAME:</b><br>${pd}</td><td><b>FORMAT:</b><br>${curFmt}</td></tr>
+                        <tr><td width="50%"><b>DATE:</b><br>${new Date().toLocaleDateString()}</td><td><b>LOCATION:</b><br>${pc}</td></tr>
                     </table>
                     <div class="dl-grid-layout">
-                        <div><div class="dl-sect-head">Main Deck (Spells):</div>${m.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}</div>
+                        <div><div class="dl-sect-head">Main Deck:</div>${m.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}</div>
                         <div>
                             <div class="dl-sect-head">Lands:</div>${l.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}
                             <div class="dl-sect-head" style="margin-top:30px;">Sideboard:</div>${s.map(c=>`<div class="c-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('')}
@@ -204,6 +202,14 @@
             </div>`;
         }
         else if(mode === 'cat') {
+            const topCards = [...cards].sort((a,b) => b.price - a.price).slice(0, 3);
+            out.innerHTML += `<div class="page"><div class="cover">
+                <h1 style="font-size:38pt; margin:0;">CATALOGUE</h1>
+                <h2 style="color:var(--gold); letter-spacing:8px; margin:5px 0 20px 0;">OFFICIEL</h2>
+                <div class="cover-cards">${topCards.map(c => `<img src="${c.img}">`).join('')}</div>
+                <hr width="120px" style="border:1px solid #000; margin:20px 0;">
+                <h2 style="color:var(--gold); font-size:28pt; margin:0;">${pn}</h2>
+            </div></div>`;
             for (let i = 0; i < cards.length; i += 10) {
                 let g = `<div class="grid-cat">`;
                 cards.slice(i, i+10).forEach(c => {
