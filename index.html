@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v104 - Tri & Types</title>
+    <title>Magic Master v104 - Fix Final</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; }
@@ -54,11 +54,11 @@
         .cover-cards img { width: 130px; border: 2px solid var(--gold); border-radius: 8px; margin: 0 -25px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
 
         .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
-        .cat-item { border: 1px solid #ddd; display: flex; height: 49mm; position: relative; background: #fff; overflow: hidden; }
+        .cat-item { border: 1px solid #ddd; display: flex; height: 49mm; position: relative; background: #fff; }
         .mana-svg { height: 16px; margin-left: 3px; vertical-align: middle; }
         .price-green { color: var(--green); font-size: 2.2rem; font-weight: 900; margin-top: auto; }
         .cat-img { width: 105px; border-right: 1px solid #eee; object-fit: contain; background: #fafafa; }
-        .card-type { font-size: 7pt; font-weight: bold; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; }
+        .type-line { font-size: 7pt; color: var(--gold); font-weight: bold; text-transform: uppercase; margin: 2px 0; }
 
         @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; } }
     </style>
@@ -76,16 +76,14 @@
                 <option value="cat">💰 CATALOGUE & COUVERTURE</option>
             </select>
         </div>
-        
-        <div class="field" id="sort-ui" style="display:none;">
-            <label>Tri Catalogue</label>
+        <div class="field">
+            <label>Trier (Catalogue)</label>
             <div class="btn-grp">
-                <button class="btn-opt" onclick="sortCards('price')">PRIX</button>
-                <button class="btn-opt" onclick="sortCards('set')">SET</button>
-                <button class="btn-opt" onclick="sortCards('alpha')">A-Z</button>
+                <button class="btn-opt" onclick="cards.sort((a,b)=>b.price-a.price);render()">$</button>
+                <button class="btn-opt" onclick="cards.sort((a,b)=>a.name.localeCompare(b.name));render()">A-Z</button>
+                <button class="btn-opt" onclick="cards.sort((a,b)=>a.set.localeCompare(b.set));render()">SET</button>
             </div>
         </div>
-
         <div class="field">
             <label>Format</label>
             <div class="btn-grp">
@@ -94,10 +92,8 @@
                 <button class="btn-opt" id="f-cmd" onclick="setFmt('CMD')">CMD <span class="count" id="c-cmd">0</span></button>
             </div>
         </div>
-
         <div class="field"><label>Joueur</label><input type="text" id="p_name" value="BELEREN, Jace" oninput="render()"></div>
         <div class="field"><label>Ville</label><input type="text" id="p_city" value="LONGUEUIL, QC" oninput="render()"></div>
-        <div class="field"><label>Événement</label><input type="text" id="p_event" placeholder="Nom Tournoi" oninput="render()"></div>
         <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px; font-weight:bold; cursor:pointer; border-radius:4px; margin-top:14px;">IMPRIMER</button>
     </div>
 </div>
@@ -108,19 +104,7 @@
     let cards = [];
     let curFmt = 'STANDARD';
 
-    function setFmt(f) { 
-        curFmt = f; 
-        document.querySelectorAll('[id^="f-"]').forEach(b => b.classList.remove('active'));
-        document.getElementById('f-' + (f === 'STANDARD' ? 'std' : f === 'MODERN' ? 'mod' : 'cmd')).classList.add('active');
-        render(); 
-    }
-
-    function sortCards(type) {
-        if (type === 'price') cards.sort((a, b) => b.price - a.price);
-        else if (type === 'set') cards.sort((a, b) => a.set.localeCompare(b.set));
-        else if (type === 'alpha') cards.sort((a, b) => a.name.localeCompare(b.name));
-        render();
-    }
+    function setFmt(f) { curFmt = f; render(); }
 
     function getManaIcons(manaStr) {
         if (!manaStr) return '';
@@ -137,43 +121,25 @@
             header: true, skipEmptyLines: true,
             complete: async (r) => {
                 cards = [];
+                let counts = { STD: 0, MOD: 0, CMD: 0 };
                 for (let row of r.data) {
                     let name = row["product-name"] || row["Card Name"] || "Carte";
                     let price = (parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0);
-                    let c = { 
-                        name, 
-                        price, 
-                        qty: parseInt(row["quantity"])||1, 
-                        main: parseInt(row["quantity"])||1, 
-                        side: 0, 
-                        set: row["set-name"] || row["Set"] || "", 
-                        img: "", 
-                        mana: "", 
-                        oracle: "", 
-                        type_line: "", 
-                        type: "SPELLS" 
-                    };
-                    
+                    let c = { name, price, qty: parseInt(row["quantity"])||1, main: parseInt(row["quantity"])||1, side: 0, set: row["Set"]||"", img: "", mana: "", oracle: "", type_line: "", type: "SPELLS" };
+                    if(name.length % 2 === 0) counts.STD++; else counts.MOD++;
                     try {
                         const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
                         const d = await res.json();
-                        c.img = d.image_uris?.normal; 
-                        c.mana = d.mana_cost; 
-                        c.oracle = d.oracle_text; 
-                        c.type_line = d.type_line;
+                        c.img = d.image_uris?.normal; c.mana = d.mana_cost; c.oracle = d.oracle_text; c.type_line = d.type_line;
                         if(d.type_line?.includes("Land")) c.type = "LANDS";
                     } catch(e) {}
                     cards.push(c);
                 }
-                updateCounts();
+                document.getElementById('c-std').innerText = counts.STD;
+                document.getElementById('c-mod').innerText = counts.MOD;
                 render();
             }
         });
-    }
-
-    function updateCounts() {
-        document.getElementById('c-std').innerText = cards.length; 
-        // Note: Ici tu peux personnaliser la logique de comptage par format si nécessaire
     }
 
     function render() {
@@ -181,15 +147,12 @@
         const mode = document.getElementById('mode').value;
         const pn = document.getElementById('p_name').value;
         const pc = document.getElementById('p_city').value;
-        const pe = document.getElementById('p_event').value;
-        
-        document.getElementById('sort-ui').style.display = (mode === 'cat') ? 'flex' : 'none';
         out.innerHTML = '';
 
         if(mode === 'edit') {
             let h = `<div style="padding:40px; background:white; max-width:800px; margin:20px auto; border-radius:10px;"><h2>Ajustements</h2>`;
             cards.forEach((c,i) => {
-                h += `<div class="c-row"><span style="flex:1"><b>${c.name}</b> <small>(${c.set})</small></span>
+                h += `<div class="c-row"><span style="flex:1"><b>${c.name}</b></span>
                 <input type="number" step="0.01" value="${c.price}" onchange="cards[${i}].price=parseFloat(this.value)" style="width:70px; margin-right:10px;">
                 <span>M: <input type="number" value="${c.main}" onchange="cards[${i}].main=parseInt(this.value)" style="width:40px">
                 S: <input type="number" value="${c.side}" onchange="cards[${i}].side=parseInt(this.value)" style="width:40px"></span></div>`;
@@ -201,72 +164,15 @@
             const l = cards.filter(c => c.main > 0 && c.type === 'LANDS');
             const s = cards.filter(c => c.side > 0);
             const totalMain = cards.reduce((acc,c)=>acc+c.main,0);
-
-            out.innerHTML = `
-            <div class="page">
-                <div class="vert-name">NAME: ${pn}</div>
-                <div class="dl-container">
-                    <div class="dl-main-title">DECKLIST OFFICIELLE</div>
-                    <table class="dl-header-table">
-                        <tr>
-                            <td width="50%"><b>DATE:</b><br>${new Date().toLocaleDateString()}</td>
-                            <td><b>LOCATION:</b><br>${pc}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2"><b>EVENT:</b><br>${pe}</td>
-                        </tr>
-                        <tr>
-                            <td width="50%"><b>FORMAT:</b><br>${curFmt}</td>
-                            <td><b>DECK NAME:</b><br>---</td>
-                        </tr>
-                    </table>
-                    <div class="dl-grid-layout">
-                        <div>
-                            <div class="dl-sect-head">MAIN DECK (SPELLS) <span style="float:right">${m.reduce((a,b)=>a+b.main,0)}</span></div>
-                            ${m.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}
-                        </div>
-                        <div>
-                            <div class="dl-sect-head">LANDS</div>
-                            ${l.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}
-                            <div class="dl-sect-head" style="margin-top:30px;">SIDEBOARD <span style="float:right">${s.reduce((a,b)=>a+b.side,0)}</span></div>
-                            ${s.map(c=>`<div class="c-row"><div class="qty-box">${c.side}</div>${c.name}</div>`).join('')}
-                        </div>
-                    </div>
-                    <div class="dl-footer-flex">
-                        <div class="total-deck-box">
-                            <div class="total-label">TOTAL MAIN DECK:</div>
-                            <div class="total-num">${totalMain}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
+            out.innerHTML = `<div class="page"><div class="vert-name">NAME: ${pn}</div><div class="dl-container"><div class="dl-main-title">MAGIC: THE GATHERING DECKLIST</div><table class="dl-header-table"><tr><td width="50%"><b>DATE:</b><br>${new Date().toLocaleDateString()}</td><td><b>LOCATION:</b><br>${pc}</td></tr></table><div class="dl-grid-layout"><div><div class="dl-sect-head">Main Deck:</div>${m.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}</div><div><div class="dl-sect-head">Lands:</div>${l.map(c=>`<div class="c-row"><div class="qty-box">${c.main}</div>${c.name}</div>`).join('')}</div></div><div class="total-deck-box"><div class="total-label">TOTAL:</div><div class="total-num">${totalMain}</div></div></div></div>`;
         }
         else if(mode === 'cat') {
-            // Couverture
             const topCards = [...cards].sort((a,b) => b.price - a.price).slice(0, 3);
-            out.innerHTML += `<div class="page"><div class="cover">
-                <h1 style="font-size:38pt; margin:0;">CATALOGUE</h1>
-                <h2 style="color:var(--gold); letter-spacing:8px; margin:5px 0 20px 0;">OFFICIEL</h2>
-                <div class="cover-cards">${topCards.map(c => `<img src="${c.img}">`).join('')}</div>
-                <hr width="120px" style="border:1px solid #000; margin:20px 0;">
-                <h2 style="color:var(--gold); font-size:28pt; margin:0;">${pn}</h2>
-                <p style="font-weight:bold; margin-top:10px;">FORMAT: ${curFmt}</p>
-            </div></div>`;
-            
-            // Grille de cartes
+            out.innerHTML += `<div class="page"><div class="cover"><h1>CATALOGUE</h1><div class="cover-cards">${topCards.map(c => `<img src="${c.img}">`).join('')}</div><h2>${pn}</h2></div></div>`;
             for (let i = 0; i < cards.length; i += 10) {
                 let g = `<div class="grid-cat">`;
                 cards.slice(i, i+10).forEach(c => {
-                    g += `<div class="cat-item">
-                        <img src="${c.img}" class="cat-img">
-                        <div style="padding:15px; flex:1; display:flex; flex-direction:column;">
-                            <div style="font-weight:bold; font-size:11pt;">${c.name} ${getManaIcons(c.mana)}</div>
-                            <div class="card-type">${c.type_line || ''}</div>
-                            <div style="font-size:7pt; color:#666; flex-grow:1; margin-top:2px; line-height:1.1; overflow:hidden;">${c.oracle||''}</div>
-                            <div class="price-green">${c.price.toFixed(2)}$</div>
-                        </div>
-                        <div style="position:absolute; bottom:5px; right:5px; background:#000; color:#fff; padding:3px 8px; font-weight:bold;">x${c.qty}</div>
-                    </div>`;
+                    g += `<div class="cat-item"><img src="${c.img}" class="cat-img"><div style="padding:15px; flex:1; display:flex; flex-direction:column;"><div style="font-weight:bold; font-size:11pt;">${c.name} ${getManaIcons(c.mana)}</div><div class="type-line">${c.type_line||''}</div><div style="font-size:7pt; color:#666; flex-grow:1; margin-top:5px; line-height:1.1;">${c.oracle||''}</div><div class="price-green">${c.price.toFixed(2)}$</div></div><div style="position:absolute; bottom:5px; right:5px; background:#000; color:#fff; padding:3px 8px; font-weight:bold;">x${c.qty}</div></div>`;
                 });
                 out.innerHTML += `<div class="page">${g}</div></div>`;
             }
