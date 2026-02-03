@@ -2,72 +2,74 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Master v106 - Final Fix</title>
+    <title>Magic Master v105 - Catalogue & Decklist - CORRECTIF</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; }
-        body { font-family: Arial, sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
+        :root { --gold: #c5a059; --dark: #111; --green: #2ecc71; --sheet-bg: #fff; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
+        /* UI CONTROLS */
         #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 999; }
-        .ctrl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; max-width: 1400px; margin: 0 auto; }
+        .ctrl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; max-width: 1400px; margin: 0 auto; }
+        .field { display: flex; flex-direction: column; gap: 4px; }
+        label { font-size: 10px; color: var(--gold); font-weight: bold; text-transform: uppercase; }
+        input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; }
+
+        /* PAGES */
+        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; padding: 15mm; box-sizing: border-box; position: relative; color: #000; box-shadow: 0 0 15px rgba(0,0,0,0.3); page-break-after: always; }
         
-        .page { width: 210mm; min-height: 297mm; background: white; margin: 10px auto; position: relative; color: #000; page-break-after: always; box-sizing: border-box; }
+        /* COUVERTURE CORRIGÉE */
+        .cover { height: 100%; border: 15px double var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 40px; text-align: center; box-sizing: border-box; }
+        .cover-cards { display: flex; gap: -20px; margin: 40px 0; }
+        .cover-cards img { width: 140px; border-radius: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); border: 2px solid var(--gold); margin: 0 -20px; }
 
-        /* --- COUVERTURE CORRIGÉE --- */
-        .cover-wrap { height: 100%; display: flex; align-items: center; justify-content: center; padding: 20mm; box-sizing: border-box; }
-        .cover-border { border: 12px double var(--gold); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 50px; position: relative; }
-        .cover-title { font-size: 52pt; font-weight: bold; margin: 0; letter-spacing: 2px; }
-        .cover-subtitle { color: var(--gold); font-size: 18pt; font-weight: bold; margin: 30px 0; letter-spacing: 8px; }
-        .cover-line { border-top: 2px solid #000; width: 150px; margin-bottom: 30px; }
-        .cover-player { color: var(--gold); font-size: 32pt; font-weight: bold; }
-        .cover-format { position: absolute; bottom: 80px; font-size: 10pt; font-weight: bold; text-transform: uppercase; }
+        .cover-title { font-size: 52pt; font-weight: bold; margin: 40px 0 0 0; }
+        .cover-subtitle { color: var(--gold); font-size: 18pt; font-weight: bold; letter-spacing: 8px; margin: 20px 0; }
+        .cover-line { border-top: 2px solid #000; width: 120px; margin: 20px 0; }
+        .cover-player-name { color: var(--gold); font-size: 32pt; font-weight: bold; text-transform: uppercase; }
 
-        /* --- DECKLIST CORRIGÉE (IMAGE 3) --- */
-        .dl-container { padding: 15mm 15mm 15mm 25mm; position: relative; height: 100%; box-sizing: border-box; }
-        .vert-name { position: absolute; left: 5mm; top: 120mm; transform: rotate(-90deg); transform-origin: left top; font-size: 18pt; font-weight: bold; width: 400px; text-transform: uppercase; white-space: nowrap; }
+        /* DECKLIST CORRIGÉE (IMAGE 3) */
+        .dl-header-box { border: 2px solid #000; width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .dl-header-box td { border: 1.5px solid #000; padding: 8px; font-size: 9pt; vertical-align: top; }
+        .dl-title { font-size: 18pt; font-weight: bold; text-align: center; padding: 10px !important; }
         
-        .dl-table { width: 100%; border: 2px solid #000; border-collapse: collapse; margin-bottom: 20px; }
-        .dl-table td { border: 1.5px solid #000; padding: 6px; font-size: 9pt; height: 35px; vertical-align: top; }
-        .dl-header-title { font-size: 18pt; font-weight: bold; vertical-align: middle !important; text-align: center; }
-
-        .dl-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; }
-        .sect-bar { background: #000; color: #fff; padding: 4px 10px; font-weight: bold; font-size: 10pt; display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .dl-main-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; margin-left: 10mm; }
+        .dl-section-bar { background: #000; color: #fff; padding: 5px 10px; font-weight: bold; font-size: 10pt; display: flex; justify-content: space-between; }
         .dl-row { display: flex; border-bottom: 1.5px solid #000; height: 28px; align-items: center; font-size: 9pt; }
         .dl-qty { width: 35px; border-right: 2px solid #000; text-align: center; font-weight: bold; margin-right: 10px; height: 100%; display: flex; align-items: center; justify-content: center; }
+        
+        .dl-footer-layout { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; margin-left: 10mm; }
+        .dl-total-bar { border: 2.5px solid #000; display: flex; width: fit-content; }
+        .dl-total-label { background: #eee; padding: 10px 20px; font-weight: bold; border-right: 2.5px solid #000; }
+        .dl-total-val { padding: 10px 30px; font-weight: bold; font-size: 16pt; }
+        
+        .dl-judge-box { border: 1.5px solid #000; width: 300px; height: 70px; display: grid; grid-template-columns: 1fr 1fr; font-size: 7pt; font-weight: bold; }
+        .vert-label { position: absolute; left: 5mm; top: 120mm; transform: rotate(-90deg); transform-origin: left top; font-weight: bold; font-size: 18pt; text-transform: uppercase; width: 400px; }
 
-        .dl-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-bottom: 10mm; }
-        .dl-total-box { display: flex; border: 2.5px solid #000; }
-        .dl-total-lbl { background: #f0f0f0; padding: 10px 15px; font-weight: bold; border-right: 2.5px solid #000; font-size: 10pt; }
-        .dl-total-val { padding: 10px 25px; font-weight: bold; font-size: 16pt; }
-        .judge-box { border: 1.5px solid #000; width: 350px; height: 80px; display: grid; grid-template-columns: 1fr 1fr; font-size: 7pt; font-weight: bold; }
-        .judge-cell { padding: 5px; border-right: 1.5px solid #000; }
+        /* CATALOGUE GRID */
+        .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; }
+        .cat-item { border: 1px solid #eee; display: flex; height: 48mm; overflow: hidden; position: relative; }
+        .cat-img { width: 100px; object-fit: cover; }
+        .mana-svg { height: 14px; margin-left: 2px; }
 
-        /* CATALOGUE */
-        .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
-        .cat-item { border: 1px solid #ddd; display: flex; height: 49mm; position: relative; }
-        .cat-img { width: 105px; object-fit: contain; background: #fafafa; border-right: 1px solid #eee; }
-        .price-green { color: var(--green); font-size: 2rem; font-weight: 900; margin-top: auto; }
-        .mana-svg { height: 14px; margin-left: 3px; vertical-align: middle; }
-
-        @media print { #ui-gate { display: none !important; } .page { margin: 0; } }
+        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; } }
     </style>
 </head>
 <body>
 
 <div id="ui-gate">
     <div class="ctrl-grid">
-        <div class="field"><label>CSV</label><input type="file" id="csvFile" onchange="loadCSV()"></div>
+        <div class="field"><label>Fichier CSV</label><input type="file" id="csvFile" onchange="loadCSV()"></div>
         <div class="field">
-            <label>Mode</label>
+            <label>Affichage</label>
             <select id="mode" onchange="render()">
                 <option value="cat">💰 CATALOGUE & COUVERTURE</option>
                 <option value="deck">📄 DECKLIST OFFICIELLE</option>
             </select>
         </div>
-        <div class="field"><label>Format</label><select id="fmt" onchange="render()"><option>STANDARD</option><option>CMD</option></select></div>
         <div class="field"><label>Joueur</label><input type="text" id="p_name" value="BELEREN, Jace" oninput="render()"></div>
-        <div class="field"><label>Événement</label><input type="text" id="p_event" value="TOURNOI LOCAL" oninput="render()"></div>
-        <button onclick="window.print()" style="background:var(--green); border:none; color:white; font-weight:bold; cursor:pointer; border-radius:4px; height:35px; margin-top:14px;">IMPRIMER</button>
+        <div class="field"><label>Tournoi</label><input type="text" id="p_event" value="TOURNOI STANDARD" oninput="render()"></div>
+        <button onclick="window.print()" style="background:var(--green); color:white; border:none; padding:10px; font-weight:bold; cursor:pointer; border-radius:4px;">IMPRIMER PDF</button>
     </div>
 </div>
 
@@ -79,20 +81,26 @@
     async function loadCSV() {
         const file = document.getElementById('csvFile').files[0];
         if(!file) return;
+
         Papa.parse(file, {
-            header: true, skipEmptyLines: true,
-            complete: async (r) => {
+            header: true,
+            skipEmptyLines: true,
+            complete: async (results) => {
                 cards = [];
-                for (let row of r.data) {
-                    let name = row["product-name"] || row["Card Name"] || "Unknown";
-                    let c = { name, qty: parseInt(row["quantity"])||1, price: parseFloat(row["Price (USD)"])||0, img: "", type: "Spell", mana: "", oracle: "" };
+                for (let row of results.data) {
+                    let name = row["product-name"] || row["Card Name"] || "Unknown Card";
+                    let qty = parseInt(row["quantity"]) || 1;
+                    let price = parseFloat(row["Price (USD)"]) || 0;
+                    let cardData = { name, qty, price, main: qty, side: 0, img: "", type: "Spell", mana: "", oracle: "" };
                     try {
                         const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
                         const d = await res.json();
-                        c.img = d.image_uris?.normal; c.mana = d.mana_cost; c.oracle = d.oracle_text;
-                        if(d.type_line?.includes("Land")) c.type = "Land";
-                    } catch(e){}
-                    cards.push(c);
+                        cardData.img = d.image_uris?.normal || d.image_uris?.small;
+                        cardData.mana = d.mana_cost || "";
+                        cardData.oracle = d.oracle_text || "";
+                        if(d.type_line?.includes("Land")) cardData.type = "Land";
+                    } catch(e) { console.error(name); }
+                    cards.push(cardData);
                 }
                 render();
             }
@@ -112,70 +120,88 @@
         const mode = document.getElementById('mode').value;
         const pn = document.getElementById('p_name').value;
         const pe = document.getElementById('p_event').value;
-        const curFmt = document.getElementById('fmt').value;
         out.innerHTML = '';
 
-        if(mode === 'cat') {
-            // --- COUVERTURE ---
-            out.innerHTML += `<div class="page"><div class="cover-wrap"><div class="cover-border">
-                <h1 class="cover-title">CATALOGUE</h1>
-                <div class="cover-subtitle">OFFICIEL</div>
-                <div class="cover-line"></div>
-                <div class="cover-player">${pn}</div>
-                <div class="cover-format">FORMAT: ${curFmt}</div>
-            </div></div></div>`;
+        if (cards.length === 0) return;
 
-            // --- PAGES CATALOGUE ---
+        if (mode === 'cat') {
+            const topCards = [...cards].sort((a,b) => b.price - a.price).slice(0, 3);
+            let coverHtml = `
+                <div class="page">
+                    <div class="cover">
+                        <h1 class="cover-title">CATALOGUE</h1>
+                        <div class="cover-subtitle">OFFICIEL</div>
+                        <div class="cover-line"></div>
+                        <div class="cover-player-name">${pn}</div>
+                        <div class="cover-cards">
+                            ${topCards.map(c => `<img src="${c.img}">`).join('')}
+                        </div>
+                        <div class="cover-format">FORMAT: STANDARD</div>
+                    </div>
+                </div>`;
+            
+            let gridHtml = '';
             for (let i = 0; i < cards.length; i += 10) {
-                let grid = `<div class="grid-cat">`;
-                cards.slice(i, i+10).forEach(c => {
-                    grid += `<div class="cat-item"><img src="${c.img}" class="cat-img">
+                let items = cards.slice(i, i+10).map(c => `
+                    <div class="cat-item">
+                        <img src="${c.img}" class="cat-img">
                         <div style="padding:10px; flex:1; display:flex; flex-direction:column;">
                             <div style="font-weight:bold; font-size:11pt;">${c.name} ${getManaIcons(c.mana)}</div>
-                            <div style="font-size:7pt; color:#666; margin-top:5px; flex:1;">${c.oracle||''}</div>
-                            <div class="price-green">${c.price.toFixed(2)}$</div>
-                        </div><div style="background:#000; color:#fff; padding:4px 8px; font-weight:bold; position:absolute; bottom:0; right:0;">x${c.qty}</div></div>`;
-                });
-                out.innerHTML += `<div class="page" style="padding:10mm;">${grid}</div></div>`;
+                            <div style="font-size:7pt; color:#666; flex:1; overflow:hidden;">${c.oracle}</div>
+                            <div style="color:var(--green); font-size:22pt; font-weight:900;">${c.price.toFixed(2)}$</div>
+                        </div>
+                        <div style="background:#000; color:#fff; padding:5px; font-weight:bold; position:absolute; bottom:0; right:0;">x${c.qty}</div>
+                    </div>`).join('');
+                gridHtml += `<div class="page"><div class="grid-cat">${items}</div></div>`;
             }
-        } else {
-            // --- DECKLIST (STYLE IMAGE 3) ---
+            out.innerHTML = coverHtml + gridHtml;
+
+        } else if (mode === 'deck') {
             const spells = cards.filter(c => c.type !== 'Land');
             const lands = cards.filter(c => c.type === 'Land');
-            const total = cards.reduce((acc, c) => acc + c.qty, 0);
+            const totalMain = cards.reduce((sum, c) => sum + c.main, 0);
 
-            out.innerHTML = `<div class="page">
-                <div class="vert-name">NAME: ${pn}</div>
-                <div class="dl-container">
-                    <table class="dl-table">
-                        <tr><td style="width:120px;">MAGIC: THE GATHERING</td><td colspan="2" class="dl-header-title">DECKLIST OFFICIELLE</td></tr>
-                        <tr><td>DATE:</td><td style="width:300px;">${new Date().toLocaleDateString()}</td><td>EVENT:</td></tr>
-                        <tr><td colspan="2">${pe}</td><td rowspan="2" style="font-size:14pt; font-weight:bold;">FORMAT:<br>${curFmt}</td></tr>
-                        <tr><td>LOCATION:</td><td>LONGUEUIL, QC</td></tr>
-                    </table>
-                    <div class="dl-grid">
-                        <div>
-                            <div class="sect-bar"><span>MAIN DECK (SPELLS)</span><span>${spells.reduce((a,b)=>a+b.qty,0)}</span></div>
-                            ${spells.map(c=>`<div class="dl-row"><div class="dl-qty">${c.qty}</div>${c.name}</div>`).join('')}
+            out.innerHTML = `
+                <div class="page">
+                    <div class="vert-label">NAME: ${pn}</div>
+                    <div style="margin-left:15mm;">
+                        <table class="dl-header-box">
+                            <tr><td colspan="3" class="dl-title">MAGIC: THE GATHERING DECKLIST</td></tr>
+                            <tr>
+                                <td width="35%"><b>DATE:</b><br>${new Date().toLocaleDateString()}</td>
+                                <td colspan="2"><b>LOCATION:</b><br>LONGUEUIL, QC</td>
+                            </tr>
+                            <tr>
+                                <td><b>EVENT:</b><br>${pe}</td>
+                                <td><b>DECK NAME:</b></td>
+                                <td width="20%"><b>FORMAT:</b><br>STANDARD</td>
+                            </tr>
+                        </table>
+
+                        <div class="dl-main-grid">
+                            <div>
+                                <div class="dl-section-bar"><span>MAIN DECK (SPELLS)</span><span>${spells.length}</span></div>
+                                ${spells.map(c => `<div class="dl-row"><div class="dl-qty">${c.main}</div>${c.name}</div>`).join('')}
+                            </div>
+                            <div>
+                                <div class="dl-section-bar"><span>LANDS</span></div>
+                                ${lands.map(c => `<div class="dl-row"><div class="dl-qty">${c.main}</div>${c.name}</div>`).join('')}
+                                <div class="dl-section-bar" style="margin-top:20px;"><span>SIDEBOARD</span><span>0</span></div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="sect-bar"><span>LANDS</span></div>
-                            ${lands.map(c=>`<div class="dl-row"><div class="dl-qty">${c.qty}</div>${c.name}</div>`).join('')}
-                            <div class="sect-bar" style="margin-top:30px;"><span>SIDEBOARD</span><span>0</span></div>
+
+                        <div class="dl-footer-layout">
+                            <div class="dl-judge-box">
+                                <div style="padding:5px; border-right:1.5px solid #000;">FOR OFFICIAL USE ONLY<br><br>Deck Check:</div>
+                                <div style="padding:5px;">Judge Signature:</div>
+                            </div>
+                            <div class="dl-total-bar">
+                                <div class="dl-total-label">TOTAL MAIN DECK:</div>
+                                <div class="dl-total-val">${totalMain}</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="dl-footer">
-                        <div class="judge-box">
-                            <div class="judge-cell">FOR OFFICIAL USE ONLY<br><br>Deck Check / Status:</div>
-                            <div class="judge-cell" style="border:none;">Judge Signature:</div>
-                        </div>
-                        <div class="dl-total-box">
-                            <div class="dl-total-lbl">TOTAL MAIN DECK:</div>
-                            <div class="dl-total-val">${total}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
+                </div>`;
         }
     }
 </script>
