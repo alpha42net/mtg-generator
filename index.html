@@ -2,65 +2,69 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Tournament Pro v65</title>
+    <title>Magic Master v68 - Full Restoration</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --gold: #d4af37; --dark: #111; --green: #27ae60; }
-        body { font-family: 'Helvetica', Arial, sans-serif; background: #cfd8dc; margin: 0; }
+        body { font-family: 'Helvetica', Arial, sans-serif; background: #cfd8dc; margin: 0; padding: 0; }
         
-        #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 1000; }
-        .nav-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; }
-        button { padding: 8px 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; }
+        #ui-gate { background: var(--dark); color: white; padding: 15px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 9999; }
+        .nav-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; max-width: 1400px; margin: 0 auto; align-items: end; }
+        
+        button { padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
         .btn-mode { background: #444; color: #ccc; }
         .btn-mode.active { background: var(--gold); color: black; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; max-width: 1300px; margin: 0 auto; align-items: end; }
-        label { font-size: 0.6rem; color: var(--gold); font-weight: bold; display: block; margin-bottom: 3px; }
-        input, select { background: #222; border: 1px solid #444; color: white; padding: 6px; border-radius: 4px; width: 100%; font-size: 0.8rem; }
+        input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; width: 100%; cursor: pointer; }
 
-        /* DECKLIST OFFICIELLE STYLED */
-        .page-deck { width: 210mm; height: 296mm; background: white; margin: 20px auto; padding: 10mm 15mm; box-sizing: border-box; position: relative; color: #000; }
+        .page { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 15mm; box-sizing: border-box; position: relative; page-break-after: always; color: #000; }
+
+        /* DECKLIST OFFICIELLE */
         .dl-header { border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .dl-section-title { background: #000; color: #fff; display: flex; justify-content: space-between; padding: 3px 10px; font-weight: 900; font-size: 10pt; margin-top: 10px; }
-        .dl-row { display: flex; border-bottom: 1px solid #ccc; font-size: 9pt; height: 24px; align-items: center; }
-        .dl-qty-box { width: 45px; text-align: center; font-weight: bold; border-right: 2.5px solid #000; margin-right: 12px; height: 100%; display: flex; align-items: center; justify-content: center; }
-        
-        .official-box { position: absolute; bottom: 20mm; left: 35%; width: 95mm; border: 3px solid #000; background: #fff; z-index: 100; }
-        .official-head { background: #000; color: #fff; text-align: center; font-size: 8pt; font-weight: bold; padding: 3px; }
-        .official-stat { display: flex; justify-content: space-between; padding: 6px 15px; border-bottom: 1px dashed #000; font-weight: bold; font-size: 11pt; }
+        .dl-section-title { background: #000; color: #fff; display: flex; justify-content: space-between; padding: 4px 10px; font-weight: 900; font-size: 10pt; margin-top: 10px; }
+        .dl-row { display: flex; border-bottom: 1px solid #ccc; font-size: 9.5pt; height: 26px; align-items: center; }
+        .dl-qty-cell { width: 45px; text-align: center; font-weight: bold; border-right: 3px solid #000; margin-right: 12px; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .official-box { position: absolute; bottom: 25mm; left: 35%; width: 95mm; border: 3.5px solid #000; background: #fff; }
+        .official-head { background: #000; color: #fff; text-align: center; font-size: 8pt; font-weight: bold; padding: 4px; }
+        .official-stat { display: flex; justify-content: space-between; padding: 8px 15px; border-bottom: 1px dashed #000; font-weight: bold; font-size: 11pt; }
 
-        /* CATALOGUE */
-        .page-cat { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 10mm; box-sizing: border-box; page-break-after: always; }
+        /* CATALOGUE & COUVERTURE */
         .grid-cat { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
-        .card-box { border: 1px solid #ddd; border-radius: 10px; display: flex; height: 50mm; position: relative; overflow: hidden; background: #fff; }
-        .price-text { color: var(--green); font-size: 1.8rem; font-weight: 900; margin-top: auto; }
+        .card-box { border: 1px solid #ddd; border-radius: 12px; display: flex; height: 50mm; position: relative; overflow: hidden; background: #fff; }
+        .mana-cost { font-size: 0.8rem; margin-left: 8px; color: #555; font-weight: bold; }
+        .price-tag { color: var(--green); font-size: 1.8rem; font-weight: 900; margin-top: auto; }
+        .cover-title { font-size: 32pt; font-weight: 900; text-align: center; margin-bottom: 30px; border-bottom: 5px solid var(--gold); }
+        .top-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+        .top-card-item { border: 1px solid #ccc; padding: 10px; border-radius: 8px; text-align: center; }
 
         /* EDIT MODE */
-        .edit-container { max-width: 1000px; margin: 20px auto; background: #fff; padding: 25px; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        .edit-container { max-width: 1000px; margin: 30px auto; background: #fff; padding: 30px; border-radius: 8px; }
+        .edit-table { width: 100%; border-collapse: collapse; }
+        .edit-table th, .edit-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        .input-qty { width: 60px; padding: 5px; text-align: center; font-weight: bold; }
 
-        @media print { #ui-gate { display: none !important; } .page-deck, .page-cat { margin: 0; box-shadow: none; width: 100%; } }
+        @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; width: 100%; } }
     </style>
 </head>
 <body>
 
 <div id="ui-gate">
     <div class="nav-btns">
-        <button id="btn-edit" class="btn-mode active" onclick="switchMode('edit')">✍️ Modifier Deck</button>
-        <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">📄 Decklist Officielle</button>
-        <button id="btn-cat" class="btn-mode" onclick="switchMode('cat')">💰 Catalogue</button>
+        <button id="btn-edit" class="btn-mode active" onclick="switchMode('edit')">✍️ MODIFIER LISTES</button>
+        <button id="btn-deck" class="btn-mode" onclick="switchMode('deck')">📄 DECKLIST OFFICIELLE</button>
+        <button id="btn-cat" class="btn-mode" onclick="switchMode('cat')">💰 CATALOGUE & COUVERTURE</button>
     </div>
     <div class="controls-grid">
         <div><label>Fichier CSV</label><input type="file" id="csvIn" onchange="processData()"></div>
         <div>
             <label>Tri Catalogue</label>
             <select id="sortType" onchange="applySort()">
-                <option value="name">Nom (A-Z)</option>
                 <option value="price-desc">Prix (Décroissant)</option>
+                <option value="name">Nom (A-Z)</option>
             </select>
         </div>
-        <div><label>Format</label><input type="text" id="fmtN" value="Modern / Standard" oninput="render()"></div>
-        <div><label>Joueur</label><input type="text" id="playN" value="Nom du Joueur" oninput="render()"></div>
+        <div><label>Format</label><input type="text" id="fmtN" value="Standard / Modern" oninput="render()"></div>
+        <div><label>Vendeur/Joueur</label><input type="text" id="playN" value="Vendeur Magic" oninput="render()"></div>
         <button onclick="window.print()" style="background:var(--green); color:white;">IMPRIMER PDF</button>
     </div>
 </div>
@@ -80,27 +84,26 @@
     async function processData() {
         const file = document.getElementById('csvIn').files[0];
         if(!file) return;
-
         Papa.parse(file, {
             header: true, skipEmptyLines: true,
             complete: async (res) => {
                 cardData = [];
                 for (let row of res.data) {
-                    let qty = parseInt(row["quantity"]) || 1;
                     let name = row["product-name"] || row["Card Name"] || "Nom";
                     let item = {
-                        name: name, qty: qty, main: qty, side: 0,
-                        set: row["Set"] || "N/A", price: parseFloat(row["Price (USD)"]) || 0,
-                        type: "SPELLS", image: "", oracle: ""
+                        name: name, qty: parseInt(row["quantity"]) || 1, main: parseInt(row["quantity"]) || 1, side: 0,
+                        set: row["Set"] || "N/A", 
+                        price: parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0,
+                        type: "SPELLS", image: "", mana: "", oracle: ""
                     };
                     try {
                         const r = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
                         const d = await r.json();
                         item.image = d.image_uris?.normal || "";
+                        item.mana = d.mana_cost || "";
                         item.oracle = d.oracle_text || "";
-                        const t = d.type_line.toLowerCase();
-                        if(t.includes("land")) item.type = "LANDS";
-                        else if(t.includes("creature")) item.type = "CREATURES";
+                        if(d.type_line.toLowerCase().includes("land")) item.type = "LANDS";
+                        else if(d.type_line.toLowerCase().includes("creature")) item.type = "CREATURES";
                     } catch(e) {}
                     cardData.push(item);
                 }
@@ -123,12 +126,11 @@
         const fmt = document.getElementById('fmtN').value;
 
         if(currentMode === 'edit') {
-            let h = `<div class="edit-container"><h3>Édition des quantités</h3><table>
-                <tr><th>Carte</th><th>CSV</th><th>Main</th><th>Side</th></tr>`;
+            let h = `<div class="edit-container"><h2>Ajustement du Deck</h2><table class="edit-table"><tr><th>Carte</th><th>CSV</th><th>Main</th><th>Side</th></tr>`;
             cardData.forEach((c, i) => {
                 h += `<tr><td><b>${c.name}</b></td><td>${c.qty}</td>
-                <td><input type="number" value="${c.main}" onchange="cardData[${i}].main=parseInt(this.value)"></td>
-                <td><input type="number" value="${c.side}" onchange="cardData[${i}].side=parseInt(this.value)"></td></tr>`;
+                <td><input type="number" class="input-qty" value="${c.main}" onchange="cardData[${i}].main=parseInt(this.value)"></td>
+                <td><input type="number" class="input-qty" value="${c.side}" onchange="cardData[${i}].side=parseInt(this.value)"></td></tr>`;
             });
             out.innerHTML = h + `</table></div>`;
         }
@@ -138,43 +140,42 @@
                 const list = cardData.filter(c => c.main > 0 && c.type === label);
                 if(!list.length) return '';
                 let sq = 0;
-                let rows = list.map(c => { tm += c.main; sq += c.main; return `<div class="dl-row"><div class="dl-qty-box">${c.main}</div><div>${c.name}</div></div>`}).join('');
+                let rows = list.map(c => { tm += c.main; sq += c.main; return `<div class="dl-row"><div class="dl-qty-cell">${c.main}</div><div>${c.name}</div></div>`}).join('');
                 return `<div class="dl-section-title"><span>${label}</span><span>${sq}</span></div>${rows}`;
             };
-            const side = cardData.filter(c => c.side > 0);
-            side.forEach(c => ts += c.side);
+            const sideCards = cardData.filter(c => c.side > 0);
+            sideCards.forEach(c => ts += c.side);
 
-            out.innerHTML = `<div class="page-deck">
-                <div class="dl-header">
-                    <div><h1 style="margin:0; font-size:22pt;">DECKLIST OFFICIELLE</h1><span>Format: <b>${fmt}</b></span></div>
-                    <div style="text-align:right;"><span>JOUEUR: <b>${playN}</b></span></div>
-                </div>
+            out.innerHTML = `<div class="page">
+                <div class="dl-header"><div><h1 style="margin:0;">DECKLIST OFFICIELLE</h1><span>Format: ${fmt}</span></div><div style="text-align:right;"><span>JOUEUR: ${playN}</span></div></div>
                 ${getSec('CREATURES')}${getSec('SPELLS')}${getSec('LANDS')}
                 <div class="dl-section-title"><span>SIDEBOARD</span><span>${ts}</span></div>
-                ${side.length ? side.map(c => `<div class="dl-row"><div class="dl-qty-box">${c.side}</div><div>${c.name}</div></div>`).join('') : '<div style="padding:10px; color:#999; font-style:italic;">Aucune réserve</div>'}
-                
-                <div class="official-box">
-                    <div class="official-head">OFFICIAL USE ONLY</div>
-                    <div class="official-stat"><span>Total Main Deck:</span><span>${tm}</span></div>
-                    <div class="official-stat"><span>Total Sideboard:</span><span>${ts}</span></div>
-                    <div class="official-stat" style="border:none; padding-top:10px;"><span>Signature Juge:</span><span>________________</span></div>
-                </div>
+                ${sideCards.length ? sideCards.map(c => `<div class="dl-row"><div class="dl-qty-cell">${c.side}</div><div>${c.name}</div></div>`).join('') : '<div style="padding:10px; color:#999;">Aucune réserve</div>'}
+                <div class="official-box"><div class="official-head">OFFICIAL USE ONLY</div><div class="official-stat"><span>Total Main Deck:</span><span>${tm}</span></div><div class="official-stat"><span>Total Sideboard:</span><span>${ts}</span></div><div class="official-stat" style="border:none; padding-top:10px;"><span>Signature Juge:</span><span>________________</span></div></div>
             </div>`;
         }
         else if(currentMode === 'cat') {
+            // COUVERTURE
+            const tops = [...cardData].sort((a,b) => b.price - a.price).slice(0, 9);
+            const total = cardData.reduce((s, c) => s + (c.price * c.qty), 0);
+            let cover = `<div class="page"><h1 class="cover-title">LOT DE VENTE MAGIC</h1><h2 style="text-align:center;">Vendeur: ${playN}</h2><div style="text-align:center; font-size:24pt; color:var(--green); margin:30px 0;">Valeur Totale: ${total.toFixed(2)}$</div><h3>CARTES DE VALEUR</h3><div class="top-cards-grid">`;
+            tops.forEach(c => { cover += `<div class="top-card-item"><img src="${c.image}" style="width:100%; border-radius:5px;"><br><b>${c.name}</b><br><span style="color:var(--green); font-weight:bold;">${c.price.toFixed(2)}$</span></div>`; });
+            out.innerHTML += cover + `</div></div>`;
+
+            // CATALOGUE
             for (let i = 0; i < cardData.length; i += 10) {
                 let g = `<div class="grid-cat">`;
                 cardData.slice(i, i+10).forEach(c => {
-                    g += `<div class="card-box">
-                        <div style="position:absolute; top:5px; right:5px; background:#000; color:#fff; padding:2px 6px; border-radius:4px; font-weight:bold;">x${c.qty}</div>
-                        <div style="width:90px; border-right:1px solid #eee; display:flex; align-items:center; justify-content:center; padding:5px;"><img src="${c.image}" style="max-height:100%; max-width:100%;"></div>
-                        <div style="flex:1; padding:10px; display:flex; flex-direction:column;">
+                    g += `<div class="card-box"><div style="position:absolute; top:5px; right:5px; background:#000; color:#fff; padding:2px 6px; border-radius:4px; font-weight:bold;">x${c.qty}</div>
+                        <div style="width:95px; border-right:1px solid #eee; display:flex; align-items:center; justify-content:center; padding:5px;"><img src="${c.image}" style="max-height:100%; max-width:100%;"></div>
+                        <div style="flex:1; padding:12px; display:flex; flex-direction:column; min-width:0;">
                             <div style="font-size:0.6rem; color:#888;">${c.set}</div>
-                            <div style="font-weight:900; font-size:1rem; margin:2px 0;">${c.name}</div>
-                            <div class="price-text">${c.price.toFixed(2)}$</div>
+                            <div style="font-weight:900; font-size:1.1rem; display:flex; align-items:center;">${c.name} <span class="mana-cost">${c.mana}</span></div>
+                            <div style="font-size:0.65rem; color:#444; flex-grow:1; overflow:hidden; margin-top:5px;">${c.oracle}</div>
+                            <div class="price-tag">${c.price.toFixed(2)}$</div>
                         </div></div>`;
                 });
-                out.innerHTML += `<div class="page-cat">${g}</div></div>`;
+                out.innerHTML += `<div class="page">${g}</div></div>`;
             }
         }
     }
