@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Magic & Hockey Manager Pro - v55</title>
+    <title>Magic Manager Pro v56 - Python Engine</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root { --gold: #d4af37; --dark: #111; --green: #27ae60; --border: #e0e0e0; }
@@ -10,7 +10,7 @@
         
         #ui-gate { background: var(--dark); color: white; padding: 20px; border-bottom: 5px solid var(--gold); position: sticky; top: 0; z-index: 1000; }
         .nav-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; max-width: 1400px; margin: 0 auto; align-items: end; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; max-width: 1400px; margin: 0 auto; align-items: end; }
         
         button { padding: 10px; border: none; border-radius: 6px; font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; }
         .btn-mode { background: #333; color: #999; }
@@ -19,29 +19,33 @@
         label { font-size: 0.6rem; font-weight: bold; color: var(--gold); text-transform: uppercase; display: block; margin-bottom: 5px; }
         input, select { background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; width: 100%; font-size: 0.8rem; }
 
+        .mana-icon { width: 16px; height: 16px; vertical-align: middle; margin-left: 2px; }
+
+        /* PAGES */
         .page { width: 210mm; min-height: 296mm; background: white; margin: 20px auto; padding: 12mm; box-sizing: border-box; page-break-after: always; position: relative; }
         
-        /* COVER */
+        /* COUVERTURE */
         .cover-frame { height: 100%; border: 4mm double var(--gold); padding: 5px; box-sizing: border-box; }
-        .cover-inner { height: 100%; border: 1mm solid var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .cover-title { font-size: 4rem; font-weight: 900; letter-spacing: 5px; text-transform: uppercase; }
+        .cover-inner { height: 100%; border: 1mm solid var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .cover-title { font-size: 4rem; font-weight: 900; text-transform: uppercase; }
 
         /* CATALOGUE */
         .grid-10 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, 1fr); gap: 5mm; height: 100%; }
         .card-item { border: 1px solid var(--border); border-radius: 12px; display: flex; height: 52mm; overflow: hidden; background: #fff; position: relative; }
-        .card-qty { position: absolute; top: 8px; right: 8px; background: #000; color: #fff; padding: 3px 7px; border-radius: 5px; font-weight: 900; font-size: 0.8rem; }
-        .img-container { width: 105px; min-width: 105px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; border-right: 1px solid #eee; }
-        .img-container img { max-height: 90%; max-width: 90%; object-fit: contain; }
+        .card-qty { position: absolute; top: 8px; right: 8px; background: #000; color: #fff; padding: 3px 7px; border-radius: 5px; font-weight: 900; }
+        .img-container { width: 105px; min-width: 105px; display: flex; align-items: center; justify-content: center; border-right: 1px solid #eee; }
+        .img-container img { max-height: 90%; max-width: 90%; }
         .card-info { flex: 1; padding: 12px; display: flex; flex-direction: column; min-width: 0; }
         .card-price { font-size: 1.8rem; font-weight: 900; color: var(--green); margin-top: auto; }
 
-        /* DECKLIST (STYLE PYTHON) */
-        .deck-section-title { background: #eee; padding: 4px 10px; font-weight: 900; font-size: 0.8rem; margin: 15px 0 5px 0; border-left: 4px solid #000; }
+        /* DECKLIST STYLE PYTHON */
+        .deck-header { border-bottom: 3px solid #000; margin-bottom: 20px; padding-bottom: 10px; }
+        .section-head { background: #f0f0f0; padding: 5px 10px; font-weight: 900; border-left: 5px solid #000; margin: 15px 0 5px 0; display: flex; justify-content: space-between; }
         .deck-row { display: flex; border-bottom: 1px solid #eee; padding: 4px 0; font-size: 0.9rem; }
-        .qty { width: 35px; font-weight: bold; }
-        
-        .judge-table { position: absolute; bottom: 15mm; right: 15mm; width: 85mm; border: 2px solid #000; padding: 15px; background: #fff; }
-        .judge-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding: 5px 0; font-weight: bold; font-size: 0.85rem; }
+        .qty-col { width: 30px; font-weight: bold; }
+
+        .judge-table { position: absolute; bottom: 15mm; right: 15mm; width: 80mm; border: 2px solid #000; padding: 15px; }
+        .judge-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding: 5px 0; font-weight: bold; }
 
         @media print { #ui-gate { display: none !important; } .page { margin: 0; box-shadow: none; width: 100%; } }
     </style>
@@ -57,23 +61,22 @@
     </div>
     <div class="controls-grid">
         <div><label>Source</label><select id="srcType"><option value="mtg">Magic</option><option value="sport">Hockey</option></select></div>
-        <div><label>Fichier CSV</label><input type="file" id="csvIn" onchange="processData()"></div>
-        <div><label>Trier par</label>
+        <div><label>CSV</label><input type="file" id="csvIn" onchange="processData()"></div>
+        <div><label>Tri</label>
             <select id="sortType" onchange="sortAndRender()">
-                <option value="name">Nom (A-Z)</option>
-                <option value="price-desc">Prix (↓↓)</option>
-                <option value="price-asc">Prix (↑↑)</option>
+                <option value="name">Nom</option>
+                <option value="price-desc">$$$ → $</option>
             </select>
         </div>
         <div><label>Format</label>
-            <select id="deckFormat" onchange="render()">
-                <option value="Standard/Modern">Standard/Modern</option>
-                <option value="Commander (EDH)">Commander</option>
+            <select id="deckFmt" onchange="render()">
+                <option value="STANDARD">Standard</option>
+                <option value="COMMANDER">Commander</option>
             </select>
         </div>
-        <div><label>Titre</label><input type="text" id="albT" value="MON CLASSEUR" oninput="render()"></div>
-        <div><label>Vendeur</label><input type="text" id="playN" value="Vendeur Pro" oninput="render()"></div>
-        <button onclick="window.print()" style="background:var(--green); color:white; height:35px; width:100%;">PDF</button>
+        <div><label>Album</label><input type="text" id="albT" value="MA COLLECTION" oninput="render()"></div>
+        <div><label>Nom</label><input type="text" id="playN" value="Vendeur Magic" oninput="render()"></div>
+        <button onclick="window.print()" style="background:var(--green); color:white; height:35px;">PDF</button>
     </div>
 </div>
 
@@ -99,13 +102,13 @@
             complete: async (res) => {
                 cardData = [];
                 for (let row of res.data) {
-                    let name = row["product-name"] || row["Card Name"] || "Inconnu";
+                    let name = row["product-name"] || row["Card Name"] || "Nom";
                     let item = {
                         name: name,
                         set: row["console-name"] || row["Set"] || "SÉRIE",
                         price: parseFloat(row["Price (USD)"]) || (parseFloat(row["price-in-pennies"])/100) || 0,
                         qty: parseInt(row["quantity"]) || 1,
-                        main: 0, side: 0, image: "", oracle: "", type: "Spell"
+                        main: 0, side: 0, image: "", oracle: "", mana: "", type: "Spell"
                     };
 
                     if(isMtg) {
@@ -114,7 +117,9 @@
                             const d = await r.json();
                             item.image = d.image_uris?.normal || "";
                             item.oracle = d.oracle_text || "";
-                            // Logique Python pour les catégories
+                            item.mana = (d.mana_cost || "").replace(/\{([^}]+)\}/g, (m, p) => 
+                                `<img src="https://svgs.scryfall.io/card-symbols/${p.replace(/\//g,'').toUpperCase()}.svg" class="mana-icon">`);
+                            
                             const t = d.type_line.toLowerCase();
                             if(t.includes("land")) item.type = "Land";
                             else if(t.includes("creature")) item.type = "Creature";
@@ -131,8 +136,7 @@
     function sortAndRender() {
         const s = document.getElementById('sortType').value;
         if(s === 'name') cardData.sort((a,b) => a.name.localeCompare(b.name));
-        else if(s === 'price-desc') cardData.sort((a,b) => b.price - a.price);
-        else if(s === 'price-asc') cardData.sort((a,b) => a.price - b.price);
+        else cardData.sort((a,b) => b.price - a.price);
         render();
     }
 
@@ -141,61 +145,62 @@
         out.innerHTML = '';
         const title = document.getElementById('albT').value;
         const sub = document.getElementById('playN').value;
-        const fmt = document.getElementById('deckFormat').value;
+        const fmt = document.getElementById('deckFmt').value;
 
         if(currentMode === 'cover') {
             out.innerHTML = `<div class="page"><div class="cover-frame"><div class="cover-inner">
-                <h1 class="cover-title">${title}</h1>
-                <h2 style="color:var(--gold); margin-top:20px;">${sub}</h2>
+                <h1 class="cover-title">${title}</h1><h2>${sub}</h2>
             </div></div></div>`;
         } else if(currentMode === 'cat') {
             for (let i = 0; i < cardData.length; i += 10) {
                 let grid = `<div class="grid-10">`;
                 cardData.slice(i, i+10).forEach(c => {
                     grid += `<div class="card-item"><div class="card-qty">x${c.qty}</div>
-                        <div class="img-container"><img src="${c.image || ''}"></div>
-                        <div class="card-info"><div class="card-meta">${c.set}</div>
-                        <div class="card-name">${c.name}</div><div class="card-desc">${c.oracle}</div>
-                        <div class="card-price">${c.price.toFixed(2)}$</div></div></div>`;
+                        <div class="img-container"><img src="${c.image}"></div>
+                        <div class="card-info">
+                            <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:#888;">
+                                <span>${c.set}</span><span>${c.mana}</span>
+                            </div>
+                            <div style="font-weight:900; margin:3px 0;">${c.name}</div>
+                            <div style="font-size:0.65rem; color:#555;">${c.oracle}</div>
+                            <div class="card-price">${c.price.toFixed(2)}$</div>
+                        </div></div>`;
                 });
                 out.innerHTML += `<div class="page">${grid}</div>`;
             }
         } else if(currentMode === 'edit') {
-            let h = `<div style="max-width:1100px; margin:20px auto; background:white; padding:20px;"><table>
-                <tr><th>Carte</th><th>Main</th><th>Side</th></tr>`;
+            let h = `<div style="max-width:1000px; margin:20px auto; background:white; padding:20px;"><table>
+                <tr><th>Carte</th><th>Stock</th><th>Main</th><th>Side</th></tr>`;
             cardData.forEach((c, i) => {
                 h += `<tr><td>${c.name}</td>
+                <td>${c.qty}</td>
                 <td><input type="number" style="width:50px" value="${c.main}" onchange="cardData[${i}].main=parseInt(this.value)"></td>
                 <td><input type="number" style="width:50px" value="${c.side}" onchange="cardData[${i}].side=parseInt(this.value)"></td></tr>`;
             });
             out.innerHTML = h + `</table></div>`;
         } else if(currentMode === 'deck') {
             let mt = 0, st = 0;
-            const mainCards = cardData.filter(c => c.main > 0);
-            const sideCards = cardData.filter(c => c.side > 0);
-            
-            const renderSection = (title, list, key) => {
-                const sub = list.filter(c => c.type === key);
-                if(sub.length === 0) return '';
-                let res = `<div class="deck-section-title">${title}</div>`;
-                sub.forEach(c => { mt += c.main; res += `<div class="deck-row"><span class="qty">${c.main}</span><span>${c.name}</span></div>`});
-                return res;
+            const getSec = (t, type) => {
+                const list = cardData.filter(c => c.main > 0 && c.type === type);
+                if(!list.length) return '';
+                let count = 0;
+                let rows = list.map(c => { mt += c.main; count += c.main; return `<div class="deck-row"><span class="qty-col">${c.main}</span><span>${c.name}</span></div>`}).join('');
+                return `<div class="section-head"><span>${t}</span><span>${count}</span></div>${rows}`;
             };
 
-            let sideHtml = '';
-            sideCards.forEach(c => { st += c.side; sideHtml += `<div class="deck-row"><span class="qty">${c.side}</span><span>${c.name}</span></div>`});
+            const sideList = cardData.filter(c => c.side > 0);
+            sideList.forEach(c => st += c.side);
+            let sideRows = sideList.map(c => `<div class="deck-row"><span class="qty-col">${c.side}</span><span>${c.name}</span></div>`).join('');
 
             out.innerHTML = `<div class="page">
-                <div style="border-bottom:3px solid #000;"><h1>DECKLIST : ${fmt}</h1><p>JOUEUR : ${sub}</p></div>
-                ${renderSection('CREATURES', mainCards, 'Creature')}
-                ${renderSection('SPELLS', mainCards, 'Spell')}
-                ${renderSection('LANDS', mainCards, 'Land')}
-                <div class="deck-section-title">SIDEBOARD</div>${sideHtml || '<i>Vide</i>'}
-                
+                <div class="deck-header"><h1>DECKLIST : ${fmt}</h1><p>JOUEUR : ${sub}</p></div>
+                ${getSec('CREATURES', 'Creature')}
+                ${getSec('SPELLS', 'Spell')}
+                ${getSec('LANDS', 'Land')}
+                <div class="section-head"><span>SIDEBOARD</span><span>${st}</span></div>${sideRows}
                 <div class="judge-table">
-                    <div style="background:#000; color:#fff; text-align:center; padding:3px; margin:-15px -15px 10px -15px;">OFFICIAL JUDGE USE</div>
-                    <div class="judge-row"><span>Main Deck:</span><span>${mt}</span></div>
-                    <div class="judge-row"><span>Sideboard:</span><span>${st}</span></div>
+                    <div class="judge-row"><span>Total Main:</span><span>${mt}</span></div>
+                    <div class="judge-row"><span>Total Side:</span><span>${st}</span></div>
                     <div class="judge-row" style="margin-top:10px; border:none;"><span>Signature:</span><span>___________</span></div>
                 </div>
             </div>`;
